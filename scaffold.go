@@ -28,7 +28,6 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
-	"time"
 )
 
 // templatesFS embeds all .tmpl files at compile time.
@@ -43,13 +42,10 @@ var templatesFS embed.FS
 // Fields match the template variables documented in CONTEXT.md:
 // - Required (from wizard): ProjectName, Description
 // - Optional (from wizard): IncludeLearnings
-// - Auto-generated: Date, Year
 type TemplateData struct {
 	ProjectName         string   // User's project name
 	Description         string   // User's project description (1-2 sentences)
-	IncludeLearnings    bool     // Whether to generate LEARNINGS.md
-	Date                string   // Current date in YYYY-MM-DD format
-	Year                int      // Current year (for copyright, etc.)
+	IncludeLearnings    bool   // Whether to generate LEARNINGS.md
 	IncludeDevContainer bool   // Whether to scaffold .devcontainer/
 	DevContainerImage   string // MCR image tag, e.g. "go:2-1.25-trixie"
 	AIChatContinuity    bool   // Whether to enable AI chat continuity
@@ -122,12 +118,7 @@ func (s *Scaffolder) Scaffold(targetDir string, data TemplateData, allowNonEmpty
 		return err
 	}
 
-	// Step 2: Auto-populate date/time fields
-	now := time.Now()
-	data.Date = now.Format("2006-01-02") // YYYY-MM-DD format
-	data.Year = now.Year()
-
-	// Step 3: Define which templates to render
+	// Step 2: Define which templates to render
 	// Core templates are always created
 	coreTemplates := []string{
 		"README.md.tmpl",

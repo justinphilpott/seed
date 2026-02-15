@@ -322,3 +322,97 @@ func TestAllImageOptions(t *testing.T) {
 		})
 	}
 }
+
+func TestAllowNonEmptyDirectory(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "project")
+	os.MkdirAll(target, 0755)
+	os.WriteFile(filepath.Join(target, "existing.txt"), []byte("hello"), 0644)
+
+	s, err := NewScaffolder()
+	if err != nil {
+		t.Fatalf("NewScaffolder: %v", err)
+	}
+
+	// Without allowNonEmpty — should fail (already covered, but confirms contrast)
+	err = s.Scaffold(target, TemplateData{ProjectName: "test", Description: "test"})
+	if err == nil {
+		t.Fatal("expected error without allowNonEmpty")
+	}
+
+	// With allowNonEmpty — should succeed
+	err = s.Scaffold(target, TemplateData{ProjectName: "test", Description: "test"}, true)
+	if err != nil {
+		t.Fatalf("expected success with allowNonEmpty, got: %v", err)
+	}
+
+	// Original file should still be there
+	if _, err := os.Stat(filepath.Join(target, "existing.txt")); err != nil {
+		t.Error("existing file should not be removed")
+	}
+	// Scaffolded files should also exist
+	if _, err := os.Stat(filepath.Join(target, "README.md")); err != nil {
+		t.Error("README.md should have been created")
+	}
+}
+
+func TestTargetPathIsFileFails(t *testing.T) {
+	dir := t.TempDir()
+	filePath := filepath.Join(dir, "not-a-dir")
+	os.WriteFile(filePath, []byte("I'm a file"), 0644)
+
+	s, err := NewScaffolder()
+	if err != nil {
+		t.Fatalf("NewScaffolder: %v", err)
+	}
+	err = s.Scaffold(filePath, TemplateData{ProjectName: "test", Description: "test"})
+	if err == nil {
+		t.Error("expected error when target is a file, not a directory")
+	}
+	if !strings.Contains(err.Error(), "not a directory") {
+		t.Errorf("expected 'not a directory' error, got: %v", err)
+	}
+}
+
+
+func TestSpecialCharsInProjectName(t *testing.T) {
+	names := []string{
+		"my project (v2)",
+		"project-with-dashes",
+		"project_with_underscores",
+		"CamelCaseProject",
+		"project.with.dots",
+	}
+
+	for _, name := range names {
+		t.Run(name, func(t *testing.T) {
+			target := mustScaffold(t, TemplateData{
+				ProjectName: name,
+				Description: "Testing special characters",
+			})
+
+			raw, err := os.ReadFile(filepath.Join(target, "README.md"))
+			if err != nil {
+				t.Fatalf("README.md should exist: %v", err)
+			}
+			if !strings.Contains(string(raw), name) {
+				t.Errorf("README.md should contain project name %q", name)
+			}
+		})
+	}
+}
+
+func TestEmptyDirectoryReuseSucceeds(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "project")
+	os.MkdirAll(target, 0755)
+
+	target = mustScaffold(t, TemplateData{
+		ProjectName: "test-empty-reuse",
+		Description: "Scaffolding into a pre-created empty directory",
+	})
+
+	if _, err := os.Stat(filepath.Join(target, "README.md")); err != nil {
+		t.Error("README.md should exist in reused empty directory")
+	}
+}
