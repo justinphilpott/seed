@@ -82,7 +82,7 @@ func run() error {
 	fmt.Println("🌱 Seed - Project Scaffolder")
 	fmt.Println()
 
-	wizardData, err := RunWizard()
+	wizardData, err := RunWizard(filepath.Base(targetDir))
 	if err != nil {
 		// User cancelled (Ctrl+C) or validation error
 		return fmt.Errorf("wizard cancelled: %w", err)

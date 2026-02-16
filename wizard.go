@@ -51,8 +51,9 @@ type WizardData struct {
 // Validation:
 // - Project Name: 1-100 chars, non-empty when trimmed
 // - Description: 1-500 chars, non-empty when trimmed
-func RunWizard() (WizardData, error) {
+func RunWizard(defaultName string) (WizardData, error) {
 	var data WizardData
+	data.ProjectName = defaultName
 
 	// Create the form with input groups
 	// Huh's NewForm accepts one or more Groups
