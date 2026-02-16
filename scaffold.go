@@ -286,8 +286,12 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 		return err
 	}
 
-	// Use a named volume to cache VS Code extensions across container rebuilds
+	// Use a named volume to cache VS Code extensions across container rebuilds.
+	// Mount to a staging path (not inside .vscode-server) to avoid Docker creating
+	// .vscode-server as root, which blocks VS Code from writing extensions.json and
+	// its bin/ and data/ siblings. A symlink connects the staging path at startup.
 	extensionsVolume := strings.ToLower(strings.ReplaceAll(data.ProjectName, " ", "-")) + "-vscode-extensions"
+	extensionsSymlink := "ln -sfn /home/vscode/.vscode-extensions-cache /home/vscode/.vscode-server/extensions"
 
 	dc := DevContainer{
 		Name:  fmt.Sprintf("%s (Dev Container)", data.ProjectName),
@@ -297,8 +301,9 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 		},
 		Mounts: []string{
 			"source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,readonly",
-			fmt.Sprintf("source=%s,target=/home/vscode/.vscode-server/extensions,type=volume", extensionsVolume),
+			fmt.Sprintf("source=%s,target=/home/vscode/.vscode-extensions-cache,type=volume", extensionsVolume),
 		},
+		PostCreateCommand: extensionsSymlink,
 	}
 
 	// If chat continuity enabled, mount all known AI tool dirs and generate setup script
@@ -314,7 +319,7 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 		}
 		dc.PostCreateCommand = "bash .devcontainer/setup.sh"
 
-		script := generateSetupScript()
+		script := generateSetupScript(extensionsSymlink)
 		scriptPath := filepath.Join(dcDir, "setup.sh")
 		if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
 			return fmt.Errorf("failed to write setup.sh: %w", err)
@@ -339,16 +344,19 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 // and creates symlinks for chat continuity. It converts host and container
 // workspace paths to the dash-separated key format used for project state.
 // e.g. /home/user/projects/myapp -> home-user-projects-myapp
-func generateSetupScript() string {
+func generateSetupScript(extensionsSymlink string) string {
 	var b strings.Builder
 
 	b.WriteString("#!/bin/bash\n")
-	b.WriteString("# AI chat continuity setup — created by seed\n")
-	b.WriteString("# Auto-detects AI coding tools and symlinks host project state\n")
-	b.WriteString("# into the container workspace path so conversations persist.\n")
+	b.WriteString("# Dev container setup — created by seed\n")
+	b.WriteString("# Symlinks VS Code extensions cache and auto-detects AI coding tools,\n")
+	b.WriteString("# symlinking host project state into the container so conversations persist.\n")
 	b.WriteString("#\n")
 	b.WriteString("# HOST_WORKSPACE is set via containerEnv in devcontainer.json\n")
 	b.WriteString("# and resolved from ${localWorkspaceFolder} at container creation time.\n\n")
+
+	b.WriteString("# Symlink cached extensions into the path VS Code expects\n")
+	b.WriteString(extensionsSymlink + "\n\n")
 
 	b.WriteString("HOST_KEY=$(echo \"$HOST_WORKSPACE\" | tr '/' '-')\n")
 	b.WriteString("CONTAINER_KEY=$(pwd | tr '/' '-')\n\n")

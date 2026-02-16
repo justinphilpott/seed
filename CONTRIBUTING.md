@@ -57,6 +57,8 @@ Seed follows strict separation of concerns across four files:
 
 **Programmatic JSON.** Devcontainer JSON is generated via `encoding/json`, not text/template. JSON with conditional fields is fragile in text/template (trailing commas, escaping). Programmatic generation guarantees valid JSON.
 
+**Extensions volume via staging path + symlink.** VS Code extensions are persisted across container rebuilds using a named Docker volume, but the volume is *not* mounted directly at `.vscode-server/extensions`. Docker creates missing parent directories as root, so mounting inside `.vscode-server/` would make the entire directory root-owned — blocking VS Code from writing `extensions.json`, `bin/`, and `data/` alongside it. Instead: (1) the Dockerfile pre-creates `~/.vscode-extensions-cache` with correct ownership, (2) the volume mounts there, and (3) `postCreateCommand` (or `setup.sh` when chat continuity is enabled) symlinks it into `.vscode-server/extensions`. This pattern applies both to seed's own devcontainer and to the devcontainers it scaffolds for new projects.
+
 **Single dependency.** Only one external dependency: `github.com/charmbracelet/huh` for the TUI wizard. Everything else uses Go's standard library.
 
 ## Template Variables

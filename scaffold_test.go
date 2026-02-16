@@ -93,8 +93,8 @@ func TestDevcontainerMinimal(t *testing.T) {
 	if len(dc.Mounts) != 2 {
 		t.Errorf("expected 2 mounts (gh credentials + extensions volume), got %d", len(dc.Mounts))
 	}
-	if dc.PostCreateCommand != "" {
-		t.Errorf("expected no postCreateCommand, got %q", dc.PostCreateCommand)
+	if !strings.Contains(dc.PostCreateCommand, "ln -sfn") || !strings.Contains(dc.PostCreateCommand, ".vscode-extensions-cache") {
+		t.Errorf("expected postCreateCommand with extensions symlink, got %q", dc.PostCreateCommand)
 	}
 
 	// Dockerfile should exist and reference the correct image
@@ -186,10 +186,14 @@ func TestDevcontainerWithChatContinuity(t *testing.T) {
 }
 
 func TestSetupScriptContent(t *testing.T) {
-	script := generateSetupScript()
+	script := generateSetupScript("ln -sfn /home/vscode/.vscode-extensions-cache /home/vscode/.vscode-server/extensions")
 
 	if !strings.HasPrefix(script, "#!/bin/bash\n") {
 		t.Error("setup script should start with shebang")
+	}
+
+	if !strings.Contains(script, ".vscode-extensions-cache") {
+		t.Error("script should symlink extensions cache")
 	}
 
 	if !strings.Contains(script, "HOST_KEY=") {
@@ -212,7 +216,7 @@ func TestSetupScriptContent(t *testing.T) {
 
 func TestSetupScriptAutoDetects(t *testing.T) {
 	// Verify the script checks if the tool dir exists before acting
-	script := generateSetupScript()
+	script := generateSetupScript("ln -sfn /home/vscode/.vscode-extensions-cache /home/vscode/.vscode-server/extensions")
 
 	// Each tool block should be wrapped in an existence check
 	for _, tool := range knownAITools {

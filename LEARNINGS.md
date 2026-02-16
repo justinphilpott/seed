@@ -34,6 +34,18 @@ Validated discoveries from building seed. Focus on what we proved, not opinions.
 
 ---
 
+### Docker Volume Mounts Inside Nested Paths Create Root Ownership
+
+**Topic**: DevContainer Setup
+
+**Insight**: Mounting a Docker volume at a nested path like `.vscode-server/extensions` causes Docker to create the parent `.vscode-server/` as root. This blocks VS Code from writing sibling files (`extensions.json`, `bin/`, `data/`). The fix is a two-step pattern: mount the volume to a staging path outside the sensitive parent (e.g., `.vscode-extensions-cache`), then symlink it into place at container startup. The Dockerfile must pre-create the staging dir with correct ownership so the volume mount inherits it.
+
+**Validated by**: Seed's own devcontainer hit this exact issue — VS Code couldn't read `extensions.json`. Fixed in commit `35fce36` for seed's own container, then ported to the scaffold code that generates devcontainers for new projects.
+
+**Implication**: When mounting volumes inside paths owned by non-root users, never mount into a subdirectory of a directory the user needs to write to. Use a staging path + symlink instead.
+
+---
+
 ### AGENTS.md for Cross-Agent Compatibility
 
 **Topic**: Project Setup
