@@ -120,6 +120,7 @@ func run() error {
 	if templateData.IncludeDevContainer {
 		fmt.Println(dimStyle.Render("  # Open in VS Code and 'Reopen in Container'"))
 	}
+	fmt.Println(dimStyle.Render("  # State your goal in README.md — what are you trying to prove?"))
 	fmt.Println(dimStyle.Render("  # Review working practices in AGENTS.md — edit them to fit your team"))
 	fmt.Println(dimStyle.Render("  # Start building!"))
 
