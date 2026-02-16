@@ -32,9 +32,9 @@ import (
 
 // Minimal styles for output messages
 var (
-	successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("2"))   // green
-	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))              // gray
-	errorStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("1"))   // red
+	successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("2")) // green
+	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))            // gray
+	errorStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("1")) // red
 )
 
 // Version is set at build time via ldflags. Falls back to "dev" for local builds.
@@ -88,27 +88,27 @@ func run() error {
 		return fmt.Errorf("wizard cancelled: %w", err)
 	}
 
-	// Step 3: Initialize scaffolder with embedded templates
+	// Step 4: Initialize scaffolder with embedded templates
 	scaffolder, err := NewScaffolder()
 	if err != nil {
 		// This should never happen if templates are valid
 		return fmt.Errorf("failed to initialize scaffolder: %w", err)
 	}
 
-	// Step 4: Convert wizard data to template data and scaffold
+	// Step 5: Convert wizard data to template data and scaffold
 	templateData := wizardData.ToTemplateData()
 	if err := scaffolder.Scaffold(targetDir, templateData, allowNonEmpty); err != nil {
 		return fmt.Errorf("failed to scaffold project: %w", err)
 	}
 
-	// Step 5: Optionally initialize git repository
+	// Step 6: Optionally initialize git repository
 	if wizardData.InitGit {
 		if err := initGitRepo(targetDir, wizardData.ProjectName); err != nil {
 			return fmt.Errorf("failed to initialize git: %w", err)
 		}
 	}
 
-	// Step 6: Success! Print confirmation
+	// Step 7: Success! Print confirmation
 	fmt.Println()
 	fmt.Printf("%s Project %s created in: %s\n",
 		successStyle.Render("✓"),
@@ -319,7 +319,10 @@ GENERATED FILES:
   .devcontainer/devcontainer.json  Dev container config (optional)
   .devcontainer/setup.sh           AI chat continuity (optional)
 
+INSTALL:
+  go install github.com/justinphilpott/seed@latest
+
 LEARN MORE:
-  https://github.com/yourusername/seed
+  https://github.com/justinphilpott/seed
 `, Version)
 }

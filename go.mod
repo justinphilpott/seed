@@ -1,4 +1,4 @@
-module github.com/yourusername/seed
+module github.com/justinphilpott/seed
 
 go 1.23
 
