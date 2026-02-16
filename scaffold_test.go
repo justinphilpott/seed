@@ -90,8 +90,8 @@ func TestDevcontainerMinimal(t *testing.T) {
 	if dc.Name != "test-dc-minimal (Dev Container)" {
 		t.Errorf("wrong name: got %q", dc.Name)
 	}
-	if len(dc.Mounts) != 0 {
-		t.Errorf("expected no mounts, got %d", len(dc.Mounts))
+	if len(dc.Mounts) != 1 {
+		t.Errorf("expected 1 mount (gh credentials), got %d", len(dc.Mounts))
 	}
 	if dc.PostCreateCommand != "" {
 		t.Errorf("expected no postCreateCommand, got %q", dc.PostCreateCommand)
@@ -129,9 +129,10 @@ func TestDevcontainerWithChatContinuity(t *testing.T) {
 		t.Errorf("wrong image: got %q", dc.Image)
 	}
 
-	// Should have mounts for all known AI tools
-	if len(dc.Mounts) != len(knownAITools) {
-		t.Fatalf("expected %d mounts (one per known AI tool), got %d", len(knownAITools), len(dc.Mounts))
+	// Should have mounts for all known AI tools plus gh credentials
+	expectedMounts := len(knownAITools) + 1 // +1 for gh config
+	if len(dc.Mounts) != expectedMounts {
+		t.Fatalf("expected %d mounts (AI tools + gh credentials), got %d", expectedMounts, len(dc.Mounts))
 	}
 	for _, tool := range knownAITools {
 		found := false

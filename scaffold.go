@@ -282,6 +282,9 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 		Features: map[string]interface{}{
 			"ghcr.io/devcontainers/features/github-cli:1": map[string]interface{}{},
 		},
+		Mounts: []string{
+			"source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,readonly",
+		},
 	}
 
 	// If chat continuity enabled, mount all known AI tool dirs and generate setup script
