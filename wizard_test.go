@@ -74,7 +74,6 @@ func TestToTemplateData(t *testing.T) {
 	wd := WizardData{
 		ProjectName:         "test-project",
 		Description:         "A test description",
-		IncludeLearnings:    true,
 		InitGit:             true,
 		IncludeDevContainer: true,
 		DevContainerImage:   "go:2-1.25-trixie",
@@ -88,9 +87,6 @@ func TestToTemplateData(t *testing.T) {
 	}
 	if td.Description != wd.Description {
 		t.Errorf("Description: got %q, want %q", td.Description, wd.Description)
-	}
-	if td.IncludeLearnings != wd.IncludeLearnings {
-		t.Errorf("IncludeLearnings: got %v, want %v", td.IncludeLearnings, wd.IncludeLearnings)
 	}
 	if td.IncludeDevContainer != wd.IncludeDevContainer {
 		t.Errorf("IncludeDevContainer: got %v, want %v", td.IncludeDevContainer, wd.IncludeDevContainer)

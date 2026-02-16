@@ -34,7 +34,7 @@ func TestCoreFilesAlwaysCreated(t *testing.T) {
 		Description: "A test project",
 	})
 
-	for _, name := range []string{"README.md", "AGENTS.md", "DECISIONS.md", "TODO.md"} {
+	for _, name := range []string{"README.md", "AGENTS.md", "DECISIONS.md", "TODO.md", "LEARNINGS.md"} {
 		path := filepath.Join(target, name)
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("expected %s to exist: %v", name, err)
@@ -42,29 +42,15 @@ func TestCoreFilesAlwaysCreated(t *testing.T) {
 	}
 }
 
-func TestLearningsOptional(t *testing.T) {
-	t.Run("excluded by default", func(t *testing.T) {
-		target := mustScaffold(t, TemplateData{
-			ProjectName: "test-no-learnings",
-			Description: "A test project",
-		})
-		path := filepath.Join(target, "LEARNINGS.md")
-		if _, err := os.Stat(path); !os.IsNotExist(err) {
-			t.Error("LEARNINGS.md should not exist when IncludeLearnings is false")
-		}
+func TestLearningsAlwaysCreated(t *testing.T) {
+	target := mustScaffold(t, TemplateData{
+		ProjectName: "test-learnings",
+		Description: "A test project",
 	})
-
-	t.Run("included when opted in", func(t *testing.T) {
-		target := mustScaffold(t, TemplateData{
-			ProjectName:      "test-with-learnings",
-			Description:      "A test project",
-			IncludeLearnings: true,
-		})
-		path := filepath.Join(target, "LEARNINGS.md")
-		if _, err := os.Stat(path); err != nil {
-			t.Errorf("LEARNINGS.md should exist: %v", err)
-		}
-	})
+	path := filepath.Join(target, "LEARNINGS.md")
+	if _, err := os.Stat(path); err != nil {
+		t.Errorf("LEARNINGS.md should always exist: %v", err)
+	}
 }
 
 func TestNoDevcontainerByDefault(t *testing.T) {

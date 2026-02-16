@@ -3,7 +3,7 @@
 // PURPOSE:
 // This file implements the interactive TUI wizard using Charm's Huh library.
 // It's responsible for:
-// - Collecting user input (ProjectName, Description, IncludeLearnings)
+// - Collecting user input (ProjectName, Description)
 // - Validating input within sensible bounds
 // - Providing a beautiful, polished user experience
 // - Returning structured data ready for template rendering
@@ -33,7 +33,6 @@ import (
 type WizardData struct {
 	ProjectName         string
 	Description         string
-	IncludeLearnings    bool
 	InitGit             bool   // Whether to run git init + initial commit
 	IncludeDevContainer bool   // Whether to scaffold .devcontainer/
 	DevContainerImage   string // MCR image tag, e.g. "go:2-1.25-trixie"
@@ -41,10 +40,9 @@ type WizardData struct {
 }
 
 // RunWizard launches the interactive TUI wizard and collects user input.
-// It displays a beautiful form with three fields:
+// It displays a form with fields:
 // 1. Project Name (text input with validation)
 // 2. Description (multi-line text area with validation)
-// 3. Include LEARNINGS.md? (yes/no confirmation)
 //
 // Returns:
 // - WizardData: Collected and validated user input
@@ -53,7 +51,6 @@ type WizardData struct {
 // Validation:
 // - Project Name: 1-100 chars, non-empty when trimmed
 // - Description: 1-500 chars, non-empty when trimmed
-// - IncludeLearnings: Boolean, no validation needed
 func RunWizard() (WizardData, error) {
 	var data WizardData
 
@@ -78,10 +75,6 @@ func RunWizard() (WizardData, error) {
 				Value(&data.Description).
 				Validate(validateDescription),
 
-			huh.NewConfirm().
-				Title("Include LEARNINGS.md?").
-				Description("Optional file for tracking validated discoveries").
-				Value(&data.IncludeLearnings),
 		),
 
 		// Group 2: Project setup options
@@ -203,10 +196,8 @@ func (w WizardData) ToTemplateData() TemplateData {
 	return TemplateData{
 		ProjectName:         w.ProjectName,
 		Description:         w.Description,
-		IncludeLearnings:    w.IncludeLearnings,
 		IncludeDevContainer: w.IncludeDevContainer,
 		DevContainerImage:   w.DevContainerImage,
 		AIChatContinuity:    w.AIChatContinuity,
-		// Date and Year are set by Scaffolder.Scaffold()
 	}
 }

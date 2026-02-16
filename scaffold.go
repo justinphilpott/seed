@@ -41,11 +41,9 @@ var templatesFS embed.FS
 //
 // Fields match the template variables documented in CONTEXT.md:
 // - Required (from wizard): ProjectName, Description
-// - Optional (from wizard): IncludeLearnings
 type TemplateData struct {
-	ProjectName         string   // User's project name
-	Description         string   // User's project description (1-2 sentences)
-	IncludeLearnings    bool   // Whether to generate LEARNINGS.md
+	ProjectName         string // User's project name
+	Description         string // User's project description (1-2 sentences)
 	IncludeDevContainer bool   // Whether to scaffold .devcontainer/
 	DevContainerImage   string // MCR image tag, e.g. "go:2-1.25-trixie"
 	AIChatContinuity    bool   // Whether to enable AI chat continuity
@@ -109,8 +107,7 @@ func NewScaffolder() (*Scaffolder, error) {
 // - Creates targetDir if it doesn't exist
 // - If targetDir exists and is empty, uses it (allows pre-created dirs)
 // - If targetDir exists and is non-empty, returns error (prevents overwrites)
-// - Renders core templates: README.md, AGENTS.md, DECISIONS.md, TODO.md
-// - Conditionally renders LEARNINGS.md if data.IncludeLearnings == true
+// - Renders core templates: README.md, AGENTS.md, DECISIONS.md, TODO.md, LEARNINGS.md
 func (s *Scaffolder) Scaffold(targetDir string, data TemplateData, allowNonEmpty ...bool) error {
 	// Step 1: Ensure target directory exists and is safe to use
 	nonEmpty := len(allowNonEmpty) > 0 && allowNonEmpty[0]
@@ -125,6 +122,7 @@ func (s *Scaffolder) Scaffold(targetDir string, data TemplateData, allowNonEmpty
 		"AGENTS.md.tmpl",
 		"DECISIONS.md.tmpl",
 		"TODO.md.tmpl",
+		"LEARNINGS.md.tmpl",
 	}
 
 	// Render all core templates
@@ -134,14 +132,7 @@ func (s *Scaffolder) Scaffold(targetDir string, data TemplateData, allowNonEmpty
 		}
 	}
 
-	// Step 4: Conditionally render LEARNINGS.md
-	if data.IncludeLearnings {
-		if err := s.renderTemplate(targetDir, "LEARNINGS.md.tmpl", data); err != nil {
-			return err
-		}
-	}
-
-	// Step 5: Conditionally scaffold .devcontainer/
+	// Step 3: Conditionally scaffold .devcontainer/
 	if data.IncludeDevContainer {
 		if err := s.scaffoldDevContainer(targetDir, data); err != nil {
 			return err
