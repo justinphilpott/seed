@@ -290,25 +290,18 @@ func parseArgs() (string, error) {
 // showUsage prints usage information to stdout.
 // Called when user runs: seed, seed --help, seed -h, or seed help
 func showUsage() {
-	fmt.Printf(`seed v%s - Project Scaffolder
+	fmt.Printf(`🌱 seed v%s — rapid agentic project scaffolder
 
 USAGE:
   seed <directory>              Scaffold a new project
-  seed skills <directory>       Install agent skills into a project
+  seed skills <directory>       Add agent skill files to a project
 
-DESCRIPTION:
-  Creates a new project with minimal, agent-friendly documentation.
-  Runs an interactive wizard to collect project details.
+WHAT IT DOES:
+  Runs an interactive wizard that asks about your project, then generates
+  a set of structured markdown docs designed for AI agents to work with.
 
-EXAMPLES:
-  seed myproject                Create ./myproject/
-  seed ~/dev/myapp              Create ~/dev/myapp/
-  seed .                        Use current directory (if empty)
-  seed skills ./myproject       Install skills into existing project
-
-FLAGS:
-  -h, --help      Show this help message
-  -v, --version   Show version number
+  The wizard collects: project name, description, language/framework,
+  architecture style, and optional devcontainer setup.
 
 GENERATED FILES:
   README.md                        Project overview
@@ -319,8 +312,21 @@ GENERATED FILES:
   .devcontainer/devcontainer.json  Dev container config (optional)
   .devcontainer/setup.sh           AI chat continuity (optional)
 
-INSTALL:
-  go install github.com/justinphilpott/seed@latest
+AGENT SKILLS:
+  seed skills <directory>
+  Copies reusable agent skill files (markdown procedures that AI agents
+  can follow) into <directory>/skills/. Use this to add skills to an
+  existing project without re-running the full wizard.
+
+EXAMPLES:
+  seed myproject                Create ./myproject/
+  seed ~/dev/myapp              Create ~/dev/myapp/
+  seed .                        Use current directory (if empty)
+  seed skills ./myproject       Add skills to an existing project
+
+FLAGS:
+  -h, --help      Show this help message
+  -v, --version   Show version number
 
 LEARN MORE:
   https://github.com/justinphilpott/seed
