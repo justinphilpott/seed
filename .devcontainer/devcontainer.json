@@ -2,18 +2,15 @@
 // Source template: https://github.com/devcontainers/templates/tree/main/src/go
 {
   "name": "Seed (Go)",
-  "image": "mcr.microsoft.com/devcontainers/go:2-1.25-trixie",
+  "build": { "dockerfile": "Dockerfile" },
 
   // Mount host Claude storage to preserve conversations across host/container contexts.
-  // Extensions volume is mounted to a staging path (not inside .vscode-server) to avoid
-  // Docker creating .vscode-server as root, which blocks VS Code server setup.
   "mounts": [
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,readonly",
-    "source=seed-vscode-extensions,target=/home/vscode/.vscode-extensions-cache,type=volume"
+    "source=seed-vscode-extensions,target=/home/vscode/.vscode-server/extensions,type=volume"
   ],
 
-  // Symlink the persisted extensions volume into the location VS Code expects,
-  // and set up Claude project directory symlinks for host/container conversation sharing.
-  "postCreateCommand": "ln -sfn /home/vscode/.vscode-extensions-cache /home/vscode/.vscode-server/extensions && HOST_KEY=$(echo \"${localWorkspaceFolder}\" | tr '/' '-') && CONTAINER_KEY=$(echo /workspaces/seed | tr '/' '-') && mkdir -p \"$HOME/.claude/projects/$HOST_KEY\" && ln -sfn \"$HOME/.claude/projects/$HOST_KEY\" \"$HOME/.claude/projects/$CONTAINER_KEY\""
+  // Set up Claude project directory symlinks for host/container conversation sharing.
+  "postCreateCommand": "HOST_KEY=$(echo \"${localWorkspaceFolder}\" | tr '/' '-'); CONTAINER_KEY=$(echo /workspaces/seed | tr '/' '-'); mkdir -p \"$HOME/.claude/projects/$HOST_KEY\"; ln -sfn \"$HOME/.claude/projects/$HOST_KEY\" \"$HOME/.claude/projects/$CONTAINER_KEY\""
 }

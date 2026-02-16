@@ -65,9 +65,14 @@ var knownAITools = []struct {
 // DevContainer represents a devcontainer.json configuration.
 // Marshaled to JSON programmatically (not via text/template) to guarantee
 // valid JSON output and handle conditional fields cleanly.
+// DevContainerBuild represents the "build" field in devcontainer.json.
+type DevContainerBuild struct {
+	Dockerfile string `json:"dockerfile"`
+}
+
 type DevContainer struct {
 	Name              string                 `json:"name"`
-	Image             string                 `json:"image"`
+	Build             DevContainerBuild      `json:"build"`
 	Features          map[string]interface{} `json:"features,omitempty"`
 	Mounts            []string               `json:"mounts,omitempty"`
 	ContainerEnv      map[string]string      `json:"containerEnv,omitempty"`
@@ -276,12 +281,17 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 		return fmt.Errorf("failed to create .devcontainer directory: %w", err)
 	}
 
+	// Render Dockerfile template (pre-creates dirs for volume mount ownership fix)
+	if err := s.renderTemplate(dcDir, "Dockerfile.tmpl", data); err != nil {
+		return err
+	}
+
 	// Use a named volume to cache VS Code extensions across container rebuilds
 	extensionsVolume := strings.ToLower(strings.ReplaceAll(data.ProjectName, " ", "-")) + "-vscode-extensions"
 
 	dc := DevContainer{
 		Name:  fmt.Sprintf("%s (Dev Container)", data.ProjectName),
-		Image: "mcr.microsoft.com/devcontainers/" + data.DevContainerImage,
+		Build: DevContainerBuild{Dockerfile: "Dockerfile"},
 		Features: map[string]interface{}{
 			"ghcr.io/devcontainers/features/github-cli:1": map[string]interface{}{},
 		},

@@ -84,8 +84,8 @@ func TestDevcontainerMinimal(t *testing.T) {
 		t.Fatalf("devcontainer.json is not valid JSON: %v", err)
 	}
 
-	if dc.Image != "mcr.microsoft.com/devcontainers/python:3-3.12" {
-		t.Errorf("wrong image: got %q", dc.Image)
+	if dc.Build.Dockerfile != "Dockerfile" {
+		t.Errorf("wrong build.dockerfile: got %q", dc.Build.Dockerfile)
 	}
 	if dc.Name != "test-dc-minimal (Dev Container)" {
 		t.Errorf("wrong name: got %q", dc.Name)
@@ -95,6 +95,20 @@ func TestDevcontainerMinimal(t *testing.T) {
 	}
 	if dc.PostCreateCommand != "" {
 		t.Errorf("expected no postCreateCommand, got %q", dc.PostCreateCommand)
+	}
+
+	// Dockerfile should exist and reference the correct image
+	dfPath := filepath.Join(target, ".devcontainer", "Dockerfile")
+	dfRaw, err := os.ReadFile(dfPath)
+	if err != nil {
+		t.Fatalf("Dockerfile should exist: %v", err)
+	}
+	dfContent := string(dfRaw)
+	if !strings.Contains(dfContent, "mcr.microsoft.com/devcontainers/python:3-3.12") {
+		t.Error("Dockerfile should contain the correct base image")
+	}
+	if !strings.Contains(dfContent, ".vscode-server") {
+		t.Error("Dockerfile should pre-create .vscode-server directory")
 	}
 
 	// setup.sh should NOT exist
@@ -125,8 +139,8 @@ func TestDevcontainerWithChatContinuity(t *testing.T) {
 		t.Fatalf("devcontainer.json is not valid JSON: %v", err)
 	}
 
-	if dc.Image != "mcr.microsoft.com/devcontainers/go:2-1.25-trixie" {
-		t.Errorf("wrong image: got %q", dc.Image)
+	if dc.Build.Dockerfile != "Dockerfile" {
+		t.Errorf("wrong build.dockerfile: got %q", dc.Build.Dockerfile)
 	}
 
 	// Should have mounts for all known AI tools plus gh credentials plus extensions volume
@@ -302,9 +316,18 @@ func TestAllImageOptions(t *testing.T) {
 				t.Fatalf("devcontainer.json is not valid JSON: %v", err)
 			}
 
+			if dc.Build.Dockerfile != "Dockerfile" {
+				t.Errorf("expected build.dockerfile \"Dockerfile\", got %q", dc.Build.Dockerfile)
+			}
+
+			// Verify the Dockerfile contains the correct base image
+			dfRaw, err := os.ReadFile(filepath.Join(target, ".devcontainer", "Dockerfile"))
+			if err != nil {
+				t.Fatalf("Dockerfile should exist: %v", err)
+			}
 			expected := "mcr.microsoft.com/devcontainers/" + img
-			if dc.Image != expected {
-				t.Errorf("expected image %q, got %q", expected, dc.Image)
+			if !strings.Contains(string(dfRaw), expected) {
+				t.Errorf("Dockerfile should contain image %q", expected)
 			}
 		})
 	}

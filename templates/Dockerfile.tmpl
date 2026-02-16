@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/devcontainers/{{.DevContainerImage}}
+
+# Pre-create directories whose children will be volume/bind-mounted.
+# Docker creates missing parent dirs as root, which blocks VS Code server setup
+# and other tools that need to write alongside the mount points.
+RUN mkdir -p /home/vscode/.vscode-server /home/vscode/.config \
+    && chown vscode:vscode /home/vscode/.vscode-server /home/vscode/.config
