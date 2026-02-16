@@ -1,24 +1,45 @@
 # Seed
 
-A CLI tool for rapid agentic POC scaffolding. Run `seed <directory>` to create a new project with minimal, agent-friendly documentation files.
+Spin up a new project in seconds, ready for AI-assisted development from the first commit.
 
-## What It Does
+Seed is a tiny CLI that scaffolds everything you need to start building a POC with coding agents like Claude Code or Codex:
 
-Seed runs an interactive wizard and generates a project skeleton designed for AI-assisted development:
+- **Structured markdown files** — README, AGENTS.md, DECISIONS.md, TODO.md, and LEARNINGS.md give your AI agent the context it needs to make good decisions from the start, and give you a lightweight system for tracking what matters as the project evolves
+- **Dev container config** — pick your stack (Go, Node, Python, Rust, Java, .NET, C++, or Universal) and get a working `.devcontainer/` setup with the right base image, so you can develop in a consistent, reproducible environment from day one
+- **AI chat continuity** — optionally preserve your Claude Code and Codex conversation history across container rebuilds, so you don't lose context when your environment resets
+- **Agent skills** — installable markdown procedures (like `doc-health-check`) that teach your AI agent reusable workflows
+
+No boilerplate bloat. The templates are deliberately minimal — just enough structure to grow into, not documentation homework.
+
+## Quick start
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | sh
+```
+
+Then point it at a directory:
+
+```bash
+seed myproject
+```
+
+An interactive wizard walks you through naming, description, and optional features. Thirty seconds later you have a project that's ready to open in your editor and start prompting.
+
+## What you get
 
 ```
 myproject/
-├── README.md          Human entry point
-├── AGENTS.md          Agent context and constraints
-├── DECISIONS.md       Architectural decisions log
-├── TODO.md            Active work tracking
-├── LEARNINGS.md       Validated discoveries
+├── README.md          Human entry point — what this project is and how to run it
+├── AGENTS.md          Context and constraints for AI agents working in the repo
+├── DECISIONS.md       Lightweight architectural decision log
+├── TODO.md            Active work items and next steps
+├── LEARNINGS.md       Validated discoveries worth preserving
 └── .devcontainer/     (optional)
     ├── devcontainer.json
-    └── setup.sh       AI chat continuity
+    └── setup.sh       AI chat continuity across rebuilds
 ```
 
-Templates are ultra-minimal — scaffolding to grow into, not documentation homework.
+Every file is a starting point, not a finished document. Fill them in as you build.
 
 ## Install
 
@@ -28,7 +49,7 @@ Templates are ultra-minimal — scaffolding to grow into, not documentation home
 curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | sh
 ```
 
-To install to a custom directory:
+Install to a custom directory:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | INSTALL_DIR=/usr/local/bin sh
@@ -45,13 +66,8 @@ go install github.com/justinphilpott/seed@latest
 Download the binary for your platform from [GitHub Releases](https://github.com/justinphilpott/seed/releases), then:
 
 ```bash
-# Make it executable (Linux/macOS)
 chmod +x seed-linux-amd64
-
-# Move it onto your PATH
 mv seed-linux-amd64 ~/.local/bin/seed
-
-# Verify
 seed --version
 ```
 
@@ -66,23 +82,19 @@ seed .                      # Use current directory (if empty)
 seed skills ./myproject     # Install agent skills into existing project
 ```
 
-The wizard collects a project name, description, and optional settings (git init, dev container, AI chat continuity).
+### Dev containers
 
-### Dev Container Support
-
-Seed can generate a `.devcontainer/` configuration with:
-- Base images from [Microsoft Container Registry](https://mcr.microsoft.com) (MCR) for Go, Node/TypeScript, Python, Rust, Java, .NET, C++, or Universal
-- Optional AI chat continuity that auto-detects Claude Code and Codex, preserving conversations across host and container
+Pick a language stack during the wizard and Seed generates a `.devcontainer/` config using [Microsoft Container Registry](https://mcr.microsoft.com) base images. If you enable AI chat continuity, a setup script auto-detects Claude Code and Codex and wires up conversation persistence so you keep your context across container rebuilds.
 
 ### Skills
 
-Agent skills are markdown files that define reusable procedures. Install them into an existing project:
+Skills are markdown files that define reusable procedures your AI agent can follow. Install them into any existing project:
 
 ```bash
 seed skills ./myproject
 ```
 
-Currently includes `doc-health-check` — an audit procedure for project documentation coverage.
+Currently ships with `doc-health-check` — an audit that reviews your project's documentation coverage and flags gaps.
 
 ## Contributing
 
@@ -90,4 +102,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, architecture, and 
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE) for details.
