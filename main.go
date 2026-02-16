@@ -79,7 +79,7 @@ func run() error {
 	}
 
 	// Step 3: Run interactive wizard
-	fmt.Println("🌱 Seed - Project Scaffolder")
+	fmt.Printf("🌱 Seed v%s - Project Scaffolder\n", Version)
 	fmt.Println()
 
 	wizardData, err := RunWizard(filepath.Base(targetDir))
