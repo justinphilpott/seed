@@ -7,8 +7,7 @@ Go CLI tool for rapid agentic POC scaffolding. Run `seed <directory>` to create 
 ## Quick Links
 
 - [CLAUDE.md](CLAUDE.md) - Claude Code instructions and quick reference
-- [CONTEXT.md](CONTEXT.md) - Detailed project context, template variables, design decisions
-- [BUILD.md](BUILD.md) - Build guide, Go concepts, troubleshooting
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development setup, architecture, template variables, extending seed
 - [LEARNINGS.md](LEARNINGS.md) - Validated discoveries across both layers (see below)
 
 ## Project Constraints
@@ -52,7 +51,7 @@ go vet ./...         # Static analysis
 Seed scaffolds agentic docs for other projects (`templates/*.tmpl`) and also maintains its own agentic docs for development. These are two layers of the same philosophy — insights from improving one should inform the other.
 
 - **Seed's templates** — starter docs for new projects (AGENTS.md, README.md, DECISIONS.md, TODO.md, LEARNINGS.md)
-- **Seed's own docs** — mature docs for this project (CLAUDE.md, AGENTS.md, CONTEXT.md, BUILD.md, LEARNINGS.md)
+- **Seed's own docs** — mature docs for this project (CLAUDE.md, AGENTS.md, CONTRIBUTING.md, LEARNINGS.md)
 
 When recording learnings, note which layer they apply to — or both. See [LEARNINGS.md](LEARNINGS.md).
 

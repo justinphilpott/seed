@@ -4,8 +4,7 @@
 
 Seed is a Go CLI tool for rapid agentic POC scaffolding. Run `seed <directory>` to create a new project with minimal, agent-friendly documentation files.
 
-See [CONTEXT.md](CONTEXT.md) for detailed project context, architecture, and template variables.
-See [BUILD.md](BUILD.md) for build instructions, Go concepts, and troubleshooting.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, architecture, template variables, and how to extend seed.
 
 ## Quick Reference
 
@@ -56,5 +55,5 @@ Push a git tag (e.g., `git tag v0.1.0 && git push origin v0.1.0`) to trigger Git
 
 When adding/removing source files, templates, or changing architecture, update:
 - The **Architecture** section in this file
-- The **file structure** diagram in CONTEXT.md
 - The **Key Files** section in AGENTS.md
+- The **Architecture** section in CONTRIBUTING.md
