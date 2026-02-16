@@ -9,7 +9,7 @@
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached"
   ],
 
-  // Symlink host project path so Claude Code finds host conversations in the container.
-  // Converts host workspace path to the dash-key format Claude Code uses for project state.
-  "postCreateCommand": "HOST_KEY=$(echo \"${localWorkspaceFolder}\" | tr '/' '-'); CONTAINER_KEY=$(echo /workspaces/seed | tr '/' '-'); if [ -d \"$HOME/.claude/projects/$HOST_KEY\" ]; then ln -sfn \"$HOME/.claude/projects/$HOST_KEY\" \"$HOME/.claude/projects/$CONTAINER_KEY\"; fi"
+  // Create host project dir (if needed) and symlink container path to it, so Claude Code
+  // finds host conversations in the container and container conversations persist to the host.
+  "postCreateCommand": "HOST_KEY=$(echo \"${localWorkspaceFolder}\" | tr '/' '-'); CONTAINER_KEY=$(echo /workspaces/seed | tr '/' '-'); mkdir -p \"$HOME/.claude/projects/$HOST_KEY\"; ln -sfn \"$HOME/.claude/projects/$HOST_KEY\" \"$HOME/.claude/projects/$CONTAINER_KEY\""
 }

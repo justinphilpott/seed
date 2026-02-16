@@ -294,10 +294,8 @@ func generateSetupScript() string {
 	for _, tool := range knownAITools {
 		b.WriteString(fmt.Sprintf("# %s (auto-detected)\n", tool.Label))
 		b.WriteString(fmt.Sprintf("if [ -d \"$HOME/%s\" ]; then\n", tool.StateDir))
-		b.WriteString(fmt.Sprintf("  mkdir -p \"$HOME/%s/projects\"\n", tool.StateDir))
-		b.WriteString(fmt.Sprintf("  if [ -d \"$HOME/%s/projects/$HOST_KEY\" ]; then\n", tool.StateDir))
-		b.WriteString(fmt.Sprintf("    ln -sfn \"$HOME/%s/projects/$HOST_KEY\" \"$HOME/%s/projects/$CONTAINER_KEY\"\n", tool.StateDir, tool.StateDir))
-		b.WriteString("  fi\n")
+		b.WriteString(fmt.Sprintf("  mkdir -p \"$HOME/%s/projects/$HOST_KEY\"\n", tool.StateDir))
+		b.WriteString(fmt.Sprintf("  ln -sfn \"$HOME/%s/projects/$HOST_KEY\" \"$HOME/%s/projects/$CONTAINER_KEY\"\n", tool.StateDir, tool.StateDir))
 		b.WriteString("fi\n\n")
 	}
 
