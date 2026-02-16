@@ -1,18 +1,18 @@
 # Learnings
 
-Capture discoveries as we build. Focus on what we validated, not just opinions.
+Validated discoveries from building seed. Focus on what we proved, not opinions.
 
 ---
 
-### Doc Stability for Agentic Development
+### Information Coverage > File Presence
 
 **Topic**: Documentation Architecture
 
-**What**: The value of project docs for agents isn't in having a specific file set — it's in covering the right informational landscape: temporal context (what changed and why), logical relationships (constraints, decisions, trade-offs), and code-spatial mapping (what's where and how it connects). The specific files are containers; the relationships are what matter.
+**Insight**: Agent-friendly docs need to cover the right *categories* of information — temporal context (what changed and why), constraints and decisions, code-spatial mapping (what's where and how it connects), active work, and learnings. The specific files are containers; the coverage is what matters. A project's docs will naturally diverge from any starter set as files merge, split, or migrate to serve real needs. That's healthy — the test is "can an agent find the decisions?" not "do you have a DECISIONS.md?"
 
-**How validated**: Audited seed's own docs and found CONTEXT.md naturally absorbed what a DECISIONS.md would cover. Seed's doc set (CLAUDE.md, AGENTS.md, CONTEXT.md, BUILD.md) differs from what seed scaffolds for users (AGENTS.md, DECISIONS.md, TODO.md, README.md) — and both are correct for their context. A brownfield tool that gap-filled against the starter set would add noise, not value.
+**Validated by**: Seed's own doc set (CLAUDE.md, AGENTS.md, CONTRIBUTING.md, LEARNINGS.md) differs from what it scaffolds for users (AGENTS.md, README.md, DECISIONS.md, TODO.md, LEARNINGS.md). Every information category is covered in both, just in different containers. Seed's CONTRIBUTING.md absorbed what separate build and context docs would cover.
 
-**Impact**: Confirms that seed's templates should scaffold *structure to grow into*, not a prescriptive file set. The brownfield/upgrade skill should assess informational gaps, not file gaps.
+**Implication**: Templates should scaffold *structure to grow into*, not a prescriptive file set. Doc health tools should audit informational coverage, not file presence.
 
 ---
 
@@ -20,11 +20,9 @@ Capture discoveries as we build. Focus on what we validated, not just opinions.
 
 **Topic**: Documentation Architecture
 
-**What**: Without an explicit "when X changes, update Y" instruction in the docs themselves, agents silently let docs go stale. Baking a maintenance section into AGENTS.md from project creation is more effective than retrofitting it later.
+**Insight**: Without explicit "when X changes, update Y" instructions in the docs themselves, agents silently let docs go stale. Baking a maintenance section into project docs from creation is more effective than retrofitting it later.
 
-**How validated**: Found seed's own docs had drifted (missing files in architecture lists, stale line counts, removed fields still documented). Added maintenance instructions to CLAUDE.md, CONTEXT.md, and AGENTS.md. Also added the maintenance section to the AGENTS.md template so new projects get it from day one.
-
-**Impact**: Agents now have a checklist to follow when modifying the codebase. Template change means all new seed-scaffolded projects inherit this pattern.
+**Validated by**: Seed's own docs had drifted — missing files in architecture lists, stale references, removed fields still documented. Adding maintenance checklists to CLAUDE.md, CONTRIBUTING.md, and AGENTS.md fixed this. The AGENTS.md template now includes the pattern so scaffolded projects inherit it from day one.
 
 ---
 
@@ -32,34 +30,12 @@ Capture discoveries as we build. Focus on what we validated, not just opinions.
 
 **Topic**: Documentation Architecture
 
-**What**: Line-number references in docs (e.g., `scaffold.go:28-35`) go stale as soon as code changes. Function and type name references (`the TemplateData struct in scaffold.go`) are stable anchors that survive refactoring.
-
-**How validated**: BUILD.md had five line-number references that were all wrong relative to the current code. Replaced with function/type name references.
-
-**Impact**: BUILD.md's "Customizing the Tool" guide now stays accurate through code changes without requiring doc updates.
+**Insight**: Line-number references in docs (e.g., `scaffold.go:28-35`) go stale as soon as code changes. Function and type name references (`the TemplateData struct in scaffold.go`) are stable anchors that survive refactoring. Prefer semantic references over positional ones.
 
 ---
 
-### Templates Are Seeds, Not Blueprints
-
-**Topic**: Documentation Architecture (both layers)
-
-**What**: Seed's own doc set (CLAUDE.md, AGENTS.md, CONTEXT.md, BUILD.md, LEARNINGS.md) differs from the starter set it scaffolds for users (AGENTS.md, README.md, DECISIONS.md, TODO.md, LEARNINGS.md). This looks like a contradiction but is actually validation. The templates scaffold *categories of information* — agent context, decisions, active work, learnings — not a permanent file structure. As a project matures, categories naturally merge, split, or migrate to serve actual needs.
-
-**How validated**: Seed itself demonstrates the pattern. CONTEXT.md absorbed what DECISIONS.md would cover. BUILD.md emerged for Go-specific learning content that no starter template anticipated. CLAUDE.md appeared for tool-specific agent instructions. No file from the starter set was "missing" — every information category was covered, just in different containers.
-
-**Resolution for agents/humans**: When a project's docs diverge from the starter set, the test isn't "do you still have DECISIONS.md?" but "can an agent find the decisions?" If the information is discoverable through AGENTS.md's links and cross-references, the doc set is healthy regardless of which files it uses.
-
-**Impact**: The brownfield/upgrade skill should audit *informational coverage* (are constraints, decisions, architecture, active work, and learnings all discoverable?), not *file presence*. This also means seed's own divergence from its templates is a feature, not a bug — and a useful test case for the brownfield tool.
-
----
-
-### Cross-Agent Compatibility via AGENTS.md
+### AGENTS.md for Cross-Agent Compatibility
 
 **Topic**: Project Setup
 
-**What**: AGENTS.md is the most universal cross-agent context file. Tool-specific files (.cursorrules, CODEX.md, etc.) add maintenance burden without proportional value for small projects. AGENTS.md covers Claude Code, Codex, Copilot, and Cursor.
-
-**How validated**: Seed had CLAUDE.md (Claude-specific) but no cross-agent file. Added AGENTS.md mirroring the essential info. Decided against .cursorrules/.windsurfrules/CODEX.md — too much surface area for one project.
-
-**Impact**: Seed is now accessible to any AI coding agent, not just Claude Code.
+**Insight**: AGENTS.md is the most universal cross-agent context file — it's read by Claude Code, Codex, Copilot, and Cursor. Tool-specific files (.cursorrules, CODEX.md, etc.) add maintenance burden without proportional value for small projects. One well-maintained AGENTS.md plus a tool-specific file (e.g., CLAUDE.md) covers the landscape.

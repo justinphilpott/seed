@@ -94,7 +94,7 @@ The scaffold logic automatically strips `.tmpl` and renders with `TemplateData`.
 
 - Run: `make test` or `go test -count=1 ./...`
 - Table-driven tests with `t.Run()` subtests
-- Each test uses `t.TempDir()` for isolated temp directories (auto-cleaned)
+- Each test uses `tempDir(t)` helper for isolated temp directories (auto-cleaned)
 - `scaffold_test.go` — file existence, template content, devcontainer JSON validity, error handling, edge cases
 - `wizard_test.go` — input validation boundaries, `WizardData` to `TemplateData` conversion
 
