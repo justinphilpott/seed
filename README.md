@@ -22,6 +22,18 @@ Templates are ultra-minimal — scaffolding to grow into, not documentation home
 
 ## Install
 
+### Quick install (Linux/macOS)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | sh
+```
+
+To install to a custom directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | INSTALL_DIR=/usr/local/bin sh
+```
+
 ### From source
 
 ```bash
