@@ -315,6 +315,9 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 			"source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,readonly",
 			fmt.Sprintf("source=%s,target=/home/vscode/.vscode-extensions-cache,type=volume", extensionsVolume),
 		},
+		ContainerEnv: map[string]string{
+			"GH_TOKEN": "${localEnv:GH_TOKEN}",
+		},
 		PostCreateCommand: extensionsSymlink,
 	}
 
@@ -335,9 +338,7 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 				tool.StateDir, tool.StateDir))
 		}
 
-		dc.ContainerEnv = map[string]string{
-			"HOST_WORKSPACE": "${localWorkspaceFolder}",
-		}
+		dc.ContainerEnv["HOST_WORKSPACE"] = "${localWorkspaceFolder}"
 		dc.PostCreateCommand = "bash .devcontainer/setup.sh"
 
 		script := generateSetupScript(extensionsSymlink)

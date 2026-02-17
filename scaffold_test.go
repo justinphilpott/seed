@@ -96,6 +96,9 @@ func TestDevcontainerMinimal(t *testing.T) {
 	if !strings.Contains(dc.PostCreateCommand, "ln -sfn") || !strings.Contains(dc.PostCreateCommand, ".vscode-extensions-cache") {
 		t.Errorf("expected postCreateCommand with extensions symlink, got %q", dc.PostCreateCommand)
 	}
+	if dc.ContainerEnv["GH_TOKEN"] != "${localEnv:GH_TOKEN}" {
+		t.Errorf("expected GH_TOKEN env forwarding, got %v", dc.ContainerEnv)
+	}
 
 	// Dockerfile should exist and reference the correct image
 	dfPath := filepath.Join(target, ".devcontainer", "Dockerfile")
