@@ -32,9 +32,11 @@ import (
 
 // Minimal styles for output messages
 var (
-	successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("2")) // green
-	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))            // gray
-	errorStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("1")) // red
+	successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("2"))  // green
+	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))             // gray
+	errorStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("1"))  // red
+	labelStyle   = lipgloss.NewStyle().Bold(true)                                  // bold white — section headers
+	cmdStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("15"))            // bright white — commands
 )
 
 // Version is set at build time via ldflags. Falls back to "dev" for local builds.
@@ -110,19 +112,25 @@ func run() error {
 
 	// Step 7: Success! Print confirmation
 	fmt.Println()
-	fmt.Printf("%s Project %s created in: %s\n",
+	fmt.Printf("%s Project %s created in %s\n",
 		successStyle.Render("✓"),
 		successStyle.Render(wizardData.ProjectName),
-		targetDir)
+		successStyle.Render(targetDir))
 	fmt.Println()
-	fmt.Println(dimStyle.Render("Next steps:"))
-	fmt.Printf(dimStyle.Render("  cd %s")+"\n", targetDir)
+	fmt.Println(labelStyle.Render("Next steps:"))
+	fmt.Println()
+	fmt.Printf("  %s\n", cmdStyle.Render("cd "+targetDir))
+	fmt.Println()
 	if templateData.IncludeDevContainer {
-		fmt.Println(dimStyle.Render("  # Open in VS Code and 'Reopen in Container'"))
+		fmt.Printf("  %s\n", cmdStyle.Render("export GH_TOKEN=$(gh auth token)"))
+		fmt.Printf("  %s\n", dimStyle.Render("# Gives gh CLI access inside the container"))
+		fmt.Println()
+		fmt.Printf("  %s\n", dimStyle.Render("# Open in VS Code → Reopen in Container"))
+		fmt.Println()
 	}
-	fmt.Println(dimStyle.Render("  # State your goal in README.md — what are you trying to prove?"))
-	fmt.Println(dimStyle.Render("  # Review working practices in AGENTS.md — edit them to fit your team"))
-	fmt.Println(dimStyle.Render("  # Start building!"))
+	fmt.Printf("  %s\n", dimStyle.Render("# State your goal in README.md — what are you trying to prove?"))
+	fmt.Printf("  %s\n", dimStyle.Render("# Review AGENTS.md — edit working practices to fit your team"))
+	fmt.Printf("  %s\n", dimStyle.Render("# Start building!"))
 
 	return nil
 }

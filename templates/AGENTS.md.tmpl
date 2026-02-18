@@ -30,6 +30,21 @@
 ## Commands
 
 [Add build, test, and run commands as they emerge]
+{{if .IncludeDevContainer}}
+## Dev Container
+
+This project includes a devcontainer. Before opening in VS Code, authenticate `gh` on your host so it is available inside the container:
+
+```bash
+# If you use gh auth login (OAuth):
+export GH_TOKEN=$(gh auth token)
+
+# If you use a personal access token directly:
+export GH_TOKEN=ghp_yourtoken
+```
+
+Then open the project in VS Code and select **Reopen in Container**. Both `GH_TOKEN` and `GITHUB_TOKEN` (for Codespaces/CI) are forwarded automatically.
+{{end}}
 
 ## Testing
 

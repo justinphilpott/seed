@@ -3,19 +3,26 @@
 {
   "name": "Seed (Go)",
   "build": { "dockerfile": "Dockerfile" },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
 
-  // Forward GitHub CLI token from host (set GH_TOKEN on host via: export GH_TOKEN=$(gh auth token)).
+  // Forward GitHub CLI tokens from host.
+  // Before opening: export GH_TOKEN=$(gh auth token)
+  // GITHUB_TOKEN is also forwarded for Codespaces/CI environments.
   "containerEnv": {
     "GH_TOKEN": "${localEnv:GH_TOKEN}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
     "HOST_WORKSPACE": "${localWorkspaceFolder}"
   },
 
   // Mount host Claude storage to preserve conversations across host/container contexts.
   // Extensions volume mounts to a staging path (not inside .vscode-server) to avoid
   // Docker creating .vscode-server as root. A symlink connects it at startup via setup.sh.
+  // gh config is mounted writable so token refresh works inside the container.
   "mounts": [
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,readonly",
+    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind",
     "source=seed-vscode-extensions,target=/home/vscode/.vscode-extensions-cache,type=volume"
   ],
 
