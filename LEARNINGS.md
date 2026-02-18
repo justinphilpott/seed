@@ -58,15 +58,15 @@ Validated discoveries from building seed. Focus on what we proved, not opinions.
 
 ---
 
-### gh CLI Auth in Devcontainers: Token Forwarding over Config Mount
+### gh CLI Auth in Devcontainers: Don't Mount ~/.config/gh
 
 **Topic**: DevContainer Setup
 
-**Insight**: Mounting `~/.config/gh` read-only into a devcontainer appears to give gh CLI auth, but fails silently if the OAuth token needs refreshing — gh writes to the config directory during refresh, which is blocked by the readonly mount. The robust pattern is to forward `GH_TOKEN` (and `GITHUB_TOKEN` for Codespaces/CI) as environment variables instead; gh uses these directly without touching the config directory. The config mount can stay (writable) as a fallback for cases where the env vars aren't set, but env vars are the primary path.
+**Insight**: Mounting `~/.config/gh` from the host into a devcontainer causes gh to fail fatally with `"failed to migrate config: couldn't find oauth token: exec: dbus-launch: not found"` — even when `GH_TOKEN` is set. The root cause: modern gh stores oauth tokens in the host system keyring (dbus/gnome-keyring), not inline in `hosts.yml`. When gh starts in the container it reads the mounted config, attempts the multi-account migration, tries to read the token from the keyring via `dbus-launch`, finds it absent, and refuses to continue — before ever checking `GH_TOKEN`. The fix is to not mount `~/.config/gh` at all. `GH_TOKEN` forwarding alone is sufficient; gh uses it directly without needing any config file.
 
-**Validated by**: Seed's own devcontainer and scaffolded devcontainers were both using a readonly config mount. Investigating why gh auth was unreliable in containers revealed the refresh-write failure mode. Fixed by removing `readonly`, adding `GH_TOKEN` and `GITHUB_TOKEN` forwarding, and surfacing the `export GH_TOKEN=$(gh auth token)` step in post-scaffold output and docs.
+**Validated by**: Confirmed by setting `GH_CONFIG_DIR=/tmp/gh-test` (clean dir, no host config) — `gh auth status` works immediately with just `GH_TOKEN`. Inspecting the mounted `hosts.yml` showed `oauth_token` absent from the file (stored in keyring instead). Fixed in seed's own devcontainer and scaffold output by removing the `~/.config/gh` bind mount.
 
-**Implication**: For devcontainer gh auth, prefer env var forwarding (`GH_TOKEN`/`GITHUB_TOKEN`) over config file mounts. Always forward both — `GH_TOKEN` for interactive use, `GITHUB_TOKEN` for CI/Codespaces.
+**Implication**: Never mount `~/.config/gh` from a host that uses the system keyring for token storage. Forward `GH_TOKEN` (and `GITHUB_TOKEN` for Codespaces/CI) as env vars only. The container will create its own clean config on first use.
 
 ---
 

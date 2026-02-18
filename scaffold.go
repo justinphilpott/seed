@@ -313,7 +313,6 @@ func (s *Scaffolder) scaffoldDevContainer(targetDir string, data TemplateData) e
 			"ghcr.io/devcontainers/features/github-cli:1": map[string]interface{}{},
 		},
 		Mounts: []string{
-			"source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind",
 			fmt.Sprintf("source=%s,target=/home/vscode/.vscode-extensions-cache,type=volume", extensionsVolume),
 		},
 		ContainerEnv: map[string]string{

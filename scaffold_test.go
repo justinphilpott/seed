@@ -90,8 +90,8 @@ func TestDevcontainerMinimal(t *testing.T) {
 	if dc.Name != "test-dc-minimal (Dev Container)" {
 		t.Errorf("wrong name: got %q", dc.Name)
 	}
-	if len(dc.Mounts) != 2 {
-		t.Errorf("expected 2 mounts (gh credentials + extensions volume), got %d", len(dc.Mounts))
+	if len(dc.Mounts) != 1 {
+		t.Errorf("expected 1 mount (extensions volume), got %d", len(dc.Mounts))
 	}
 	if !strings.Contains(dc.PostCreateCommand, "ln -sfn") || !strings.Contains(dc.PostCreateCommand, ".vscode-extensions-cache") {
 		t.Errorf("expected postCreateCommand with extensions symlink, got %q", dc.PostCreateCommand)
@@ -146,10 +146,10 @@ func TestDevcontainerWithChatContinuity(t *testing.T) {
 		t.Errorf("wrong build.dockerfile: got %q", dc.Build.Dockerfile)
 	}
 
-	// Should have mounts for all known AI tools plus gh credentials plus extensions volume
-	expectedMounts := len(knownAITools) + 2 // +1 for gh config, +1 for extensions volume
+	// Should have mounts for all known AI tools plus extensions volume
+	expectedMounts := len(knownAITools) + 1 // +1 for extensions volume
 	if len(dc.Mounts) != expectedMounts {
-		t.Fatalf("expected %d mounts (AI tools + gh credentials + extensions volume), got %d", expectedMounts, len(dc.Mounts))
+		t.Fatalf("expected %d mounts (AI tools + extensions volume), got %d", expectedMounts, len(dc.Mounts))
 	}
 	for _, tool := range knownAITools {
 		found := false

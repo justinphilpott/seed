@@ -19,10 +19,12 @@
   // Mount host Claude storage to preserve conversations across host/container contexts.
   // Extensions volume mounts to a staging path (not inside .vscode-server) to avoid
   // Docker creating .vscode-server as root. A symlink connects it at startup via setup.sh.
-  // gh config is mounted writable so token refresh works inside the container.
+  // NOTE: ~/.config/gh is intentionally NOT mounted. The host's gh config stores oauth
+  // tokens in the system keyring (dbus), which is unavailable in the container. Mounting
+  // it causes gh to fail with "dbus-launch not found" even when GH_TOKEN is set. GH_TOKEN
+  // forwarding alone is sufficient and avoids the migration failure entirely.
   "mounts": [
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind",
     "source=seed-vscode-extensions,target=/home/vscode/.vscode-extensions-cache,type=volume"
   ],
 
