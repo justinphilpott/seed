@@ -53,19 +53,15 @@ Seed follows strict separation of concerns across four files:
 
 ### Key Design Decisions
 
-**Ultra-minimal templates.** Templates are scaffolding to build on, not documentation homework. Removed: TechStack, Author, "Last Updated" fields, format sections, verbose guidelines. Kept: clean examples, minimal placeholders, navigation links.
+Full rationale for each decision lives in [DECISIONS.md](DECISIONS.md). Quick orientation for contributors:
 
-**Working practices over structure.** AGENTS.md includes a "Working Practices" section that encodes the habits that keep docs alive: atomic commits, docs-with-code, coherence checks before committing, and pruning stale placeholders. These principles are more valuable than structural rules because docs rot from neglected habits, not missing sections.
-
-**TODO.md as live working context.** TODO.md's "Doing Now" section serves double duty: it's crash recovery (if a session dies mid-task, the next one knows what was happening) and a commit message source (completed items flow directly into the commit, then get cleared). This keeps TODO.md as a living document rather than a stale list. The file is also explicitly positioned as a stepping stone — projects should graduate to a proper issue tracker once they have momentum.
-
-**Embedded filesystem.** Templates and skills are embedded at compile time via `//go:embed`. The binary is fully self-contained — no external files needed.
-
-**Programmatic JSON.** Devcontainer JSON is generated via `encoding/json`, not text/template. JSON with conditional fields is fragile in text/template (trailing commas, escaping). Programmatic generation guarantees valid JSON.
-
-**Extensions volume via staging path + symlink.** VS Code extensions are persisted across container rebuilds using a named Docker volume, but the volume is *not* mounted directly at `.vscode-server/extensions`. Docker creates missing parent directories as root, so mounting inside `.vscode-server/` would make the entire directory root-owned — blocking VS Code from writing `extensions.json`, `bin/`, and `data/` alongside it. Instead: (1) the Dockerfile pre-creates `~/.vscode-extensions-cache` with correct ownership, (2) the volume mounts there, and (3) `postCreateCommand` (or `setup.sh` when chat continuity is enabled) symlinks it into `.vscode-server/extensions`. This pattern applies both to seed's own devcontainer and to the devcontainers it scaffolds for new projects.
-
-**Single dependency.** Only one external dependency: `github.com/charmbracelet/huh` for the TUI wizard. Everything else uses Go's standard library.
+- **Ultra-minimal templates** — scaffolding to grow into, not documentation homework
+- **Working practices over structure** — AGENTS.md encodes habits, not checklists; habits outlast structure
+- **TODO.md as live working context** — "Doing Now" doubles as crash recovery and commit message source
+- **Embedded filesystem** — binary is self-contained via `//go:embed`; no external files needed
+- **Programmatic JSON** — devcontainer config uses `encoding/json` to guarantee valid JSON across conditional fields
+- **Extensions volume via staging path + symlink** — avoids root-owned `.vscode-server/` when mounting Docker volumes inside nested paths
+- **Single dependency** — only `github.com/charmbracelet/huh` for the TUI; everything else is standard library
 
 ## Template Variables
 

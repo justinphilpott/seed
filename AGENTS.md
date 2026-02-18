@@ -8,6 +8,8 @@ Go CLI tool for rapid agentic POC scaffolding. Run `seed <directory>` to create 
 
 - [CLAUDE.md](CLAUDE.md) - Claude Code instructions and quick reference
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Development setup, architecture, template variables, extending seed
+- [DECISIONS.md](DECISIONS.md) - Architectural decisions and rationale
+- [TODO.md](TODO.md) - Active work and next steps
 - [LEARNINGS.md](LEARNINGS.md) - Validated discoveries across both layers (see below)
 
 ## Working Practices
@@ -67,4 +69,4 @@ When recording learnings, note which layer they apply to — or both. See [LEARN
 
 ## Branch
 
-Current work on: `dev` branch. Main branch: `main`.
+Main branch: `main`. Feature branches are cut from `main` and merged via PR.

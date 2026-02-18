@@ -45,7 +45,7 @@ go vet ./...         # Static analysis
 
 ## Branch
 
-Current work on: `dev` branch. Main branch: `main`.
+Main branch: `main`. Feature branches are cut from `main` and merged via PR.
 
 ## Releasing
 
@@ -57,3 +57,5 @@ When adding/removing source files, templates, or changing architecture, update:
 - The **Architecture** section in this file
 - The **Key Files** section in AGENTS.md
 - The **Architecture** section in CONTRIBUTING.md
+
+When making architectural decisions, add an entry to DECISIONS.md.

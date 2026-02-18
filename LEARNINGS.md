@@ -22,7 +22,7 @@ Validated discoveries from building seed. Focus on what we proved, not opinions.
 
 **Insight**: Without explicit "when X changes, update Y" instructions in the docs themselves, agents silently let docs go stale. Baking a maintenance section into project docs from creation is more effective than retrofitting it later.
 
-**Validated by**: Seed's own docs had drifted — missing files in architecture lists, stale references, removed fields still documented. Adding maintenance checklists to CLAUDE.md, CONTRIBUTING.md, and AGENTS.md fixed this. The AGENTS.md template now includes the pattern so scaffolded projects inherit it from day one.
+**Validated by**: Seed's own docs had drifted — missing files in architecture lists, stale references, removed fields still documented. Adding maintenance checklists to CLAUDE.md, CONTRIBUTING.md, and AGENTS.md fixed this. The AGENTS.md template now includes the pattern so scaffolded projects inherit it from day one. Reinforced a second time when a doc sync found DECISIONS.md missing seven decisions, TODO.md not existing at all, and branch references stale — on the project that teaches these practices.
 
 ---
 
@@ -67,6 +67,18 @@ Validated discoveries from building seed. Focus on what we proved, not opinions.
 **Validated by**: Seed's own devcontainer and scaffolded devcontainers were both using a readonly config mount. Investigating why gh auth was unreliable in containers revealed the refresh-write failure mode. Fixed by removing `readonly`, adding `GH_TOKEN` and `GITHUB_TOKEN` forwarding, and surfacing the `export GH_TOKEN=$(gh auth token)` step in post-scaffold output and docs.
 
 **Implication**: For devcontainer gh auth, prefer env var forwarding (`GH_TOKEN`/`GITHUB_TOKEN`) over config file mounts. Always forward both — `GH_TOKEN` for interactive use, `GITHUB_TOKEN` for CI/Codespaces.
+
+---
+
+### Dogfooding a Doc-Generation Tool Has an Inherent Lag
+
+**Topic**: Documentation Architecture
+
+**Insight**: A tool that generates doc conventions for other projects cannot perfectly follow those conventions itself in real time. The tool's own docs represent a matured, evolved state; its templates represent the current best-guess starting point for new projects. They diverge naturally as the conventions are refined through use, and converge again through periodic sync — not continuous parity. The gap is a signal that the conventions are evolving healthily, not a maintenance failure.
+
+**Validated by**: Seed's own docs repeatedly drifted from what seed scaffolds for users. The conventions in the templates were being improved faster than seed's own files were being updated. Trying to maintain perfect real-time parity is impractical when the output is itself being designed.
+
+**Implication**: For tools in this class, schedule periodic coherence checks (e.g., run `doc-health-check` on seed itself) rather than expecting continuous sync. Accept that the project's own docs will lag the templates — what matters is that both layers cover the same informational categories, not that they use identical structure.
 
 ---
 
