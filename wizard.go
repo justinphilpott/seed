@@ -38,7 +38,8 @@ type WizardData struct {
 	IncludeDevContainer bool   // Whether to scaffold .devcontainer/
 	DevContainerImage      string   // MCR image tag, e.g. "go:2-1.25-trixie"
 	AIChatContinuity       bool     // Whether to enable AI chat continuity
-	AgentExtensions []string // Selected extension IDs (e.g. "anthropics.claude-code")
+	InstallAgentExtensions bool     // Whether to install agent extensions
+	AgentExtensions        []string // Selected extension IDs (e.g. "anthropics.claude-code")
 }
 
 // RunWizard launches the interactive TUI wizard and collects user input.
