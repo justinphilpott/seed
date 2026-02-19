@@ -75,7 +75,7 @@ Templates receive a `TemplateData` struct (defined in `scaffold.go`):
 - `IncludeDevContainer` — Whether to scaffold .devcontainer/
 - `DevContainerImage` — MCR image tag, e.g. `go:2-1.25-trixie`
 - `AIChatContinuity` — Whether to enable AI chat continuity
-- `VSCodeExtensions` — VS Code extension IDs to install in dev container
+- `VSCodeExtensions` — VS Code extension IDs; added to `devcontainer.json` customizations (auto-install in container) and to `.vscode/extensions.json` (workspace recommendation prompt)
 - `License` — `"none"`, `"MIT"`, or `"Apache-2.0"`
 - `Year` — Current year (auto-populated by Scaffolder)
 

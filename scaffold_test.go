@@ -637,6 +637,66 @@ func TestDevContainerVSCodeExtensions(t *testing.T) {
 	})
 }
 
+func TestVSCodeExtensionsJSON(t *testing.T) {
+	t.Run("generated with correct content when devcontainer and extensions selected", func(t *testing.T) {
+		target := mustScaffold(t, TemplateData{
+			ProjectName:         "test-vscode-ext",
+			Description:         "A test project",
+			IncludeDevContainer: true,
+			DevContainerImage:   "go:2-1.25-trixie",
+			VSCodeExtensions:    []string{"anthropics.claude-code", "openai.chatgpt"},
+		})
+
+		extPath := filepath.Join(target, ".vscode", "extensions.json")
+		raw, err := os.ReadFile(extPath)
+		if err != nil {
+			t.Fatalf(".vscode/extensions.json should exist: %v", err)
+		}
+
+		var ext VSCodeWorkspaceExtensions
+		if err := json.Unmarshal(raw, &ext); err != nil {
+			t.Fatalf(".vscode/extensions.json is not valid JSON: %v", err)
+		}
+
+		if len(ext.Recommendations) != 2 {
+			t.Fatalf("expected 2 recommendations, got %d", len(ext.Recommendations))
+		}
+		if ext.Recommendations[0] != "anthropics.claude-code" {
+			t.Errorf("expected first recommendation to be anthropics.claude-code, got %q", ext.Recommendations[0])
+		}
+		if ext.Recommendations[1] != "openai.chatgpt" {
+			t.Errorf("expected second recommendation to be openai.chatgpt, got %q", ext.Recommendations[1])
+		}
+	})
+
+	t.Run("not generated when no extensions selected", func(t *testing.T) {
+		target := mustScaffold(t, TemplateData{
+			ProjectName:         "test-vscode-no-ext",
+			Description:         "A test project",
+			IncludeDevContainer: true,
+			DevContainerImage:   "go:2-1.25-trixie",
+		})
+
+		extPath := filepath.Join(target, ".vscode", "extensions.json")
+		if _, err := os.Stat(extPath); !os.IsNotExist(err) {
+			t.Error(".vscode/extensions.json should not exist when no extensions selected")
+		}
+	})
+
+	t.Run("not generated when devcontainer not opted in", func(t *testing.T) {
+		target := mustScaffold(t, TemplateData{
+			ProjectName:      "test-vscode-no-dc",
+			Description:      "A test project",
+			VSCodeExtensions: []string{"anthropics.claude-code"},
+		})
+
+		extPath := filepath.Join(target, ".vscode", "extensions.json")
+		if _, err := os.Stat(extPath); !os.IsNotExist(err) {
+			t.Error(".vscode/extensions.json should not exist when devcontainer not opted in")
+		}
+	})
+}
+
 func TestEmptyDirectoryReuseSucceeds(t *testing.T) {
 	dir := t.TempDir()
 	target := filepath.Join(dir, "project")

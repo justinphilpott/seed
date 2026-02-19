@@ -79,7 +79,6 @@ func TestToTemplateData(t *testing.T) {
 		IncludeDevContainer:    true,
 		DevContainerImage:      "go:2-1.25-trixie",
 		AIChatContinuity:       true,
-		InstallAgentExtensions: true,
 		AgentExtensions:        []string{"anthropics.claude-code", "openai.chatgpt"},
 	}
 

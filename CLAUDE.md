@@ -21,7 +21,7 @@ go vet ./...         # Static analysis
 
 - **main.go** — CLI entry point, argument parsing, orchestration
 - **wizard.go** — TUI wizard (Charm Huh library), user input collection
-- **scaffold.go** — Template rendering (embed.FS + text/template), devcontainer generation (encoding/json)
+- **scaffold.go** — Template rendering (embed.FS + text/template), devcontainer generation (encoding/json), .vscode/extensions.json generation
 - **scaffold_test.go** — Scaffold/template tests
 - **wizard_test.go** — Wizard validation and data transformation tests
 - **skills.go** — Skill file embedding and installation logic

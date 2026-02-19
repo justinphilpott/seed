@@ -60,6 +60,14 @@ Record architectural choices so future contributors (and agents) understand why.
 
 ---
 
+### Two-layer VS Code extension installation
+
+**Context**: When the user selects coding-agent extensions (Claude Code, Codex) during scaffolding, there are two VS Code mechanisms: `devcontainer.json` `customizations.vscode.extensions` (silently auto-installs when the container opens) and `.vscode/extensions.json` (shows an "Install recommended extensions?" prompt in any workspace context, local or container).
+**Decision**: Generate both. Add selected extension IDs to `devcontainer.json` customizations for auto-install in the container, and also write `.vscode/extensions.json` for the workspace recommendation prompt. Both only generated when devcontainer is opted in and at least one extension is selected.
+**Impact**: Users get the prompt when they first open the project locally (before entering the container), and silent auto-install once inside the container. Both files are driven by the same `VSCodeExtensions` slice — single source of truth.
+
+---
+
 ### Flat package structure over cmd/internal layout
 
 **Context**: Considered restructuring to `cmd/seed/`, `internal/wizard/`, `internal/scaffold/` to follow the multi-package Go convention.

@@ -38,7 +38,6 @@ type WizardData struct {
 	IncludeDevContainer bool   // Whether to scaffold .devcontainer/
 	DevContainerImage      string   // MCR image tag, e.g. "go:2-1.25-trixie"
 	AIChatContinuity       bool     // Whether to enable AI chat continuity
-	InstallAgentExtensions bool     // Whether to install agent extensions
 	AgentExtensions        []string // Selected extension IDs (e.g. "anthropics.claude-code")
 }
 
@@ -214,8 +213,8 @@ func validateDescription(s string) error {
 // This is a simple mapping function that bridges the wizard layer
 // and the scaffolding layer.
 //
-// Note: Date and Year are NOT set here - they're auto-populated
-// by the Scaffolder to ensure they're always current.
+// Note: Year is NOT set here - it's auto-populated
+// by the Scaffolder to ensure it's always current.
 func (w WizardData) ToTemplateData() TemplateData {
 	return TemplateData{
 		ProjectName:         w.ProjectName,

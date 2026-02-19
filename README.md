@@ -18,6 +18,8 @@ myproject/
 ├── DECISIONS.md       Lightweight architectural decision log
 ├── TODO.md            Active work items and next steps
 ├── LEARNINGS.md       Validated discoveries worth preserving
+├── .vscode/           (optional, with devcontainer)
+│   └── extensions.json  Prompts VS Code to install recommended extensions
 └── .devcontainer/     (optional)
     ├── devcontainer.json
     └── setup.sh       AI chat continuity across rebuilds

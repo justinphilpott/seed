@@ -81,6 +81,13 @@ type DevContainerCustomizations struct {
 	VSCode DevContainerVSCode `json:"vscode,omitempty"`
 }
 
+// VSCodeWorkspaceExtensions represents the content of .vscode/extensions.json.
+// This file prompts VS Code to offer installing recommended extensions when the
+// workspace is opened (works in both local and devcontainer contexts).
+type VSCodeWorkspaceExtensions struct {
+	Recommendations []string `json:"recommendations"`
+}
+
 type DevContainer struct {
 	Name              string                      `json:"name"`
 	Build             DevContainerBuild           `json:"build"`
@@ -168,6 +175,13 @@ func (s *Scaffolder) Scaffold(targetDir string, data TemplateData, allowNonEmpty
 	// Step 4: Conditionally scaffold .devcontainer/
 	if data.IncludeDevContainer {
 		if err := s.scaffoldDevContainer(targetDir, data); err != nil {
+			return err
+		}
+	}
+
+	// Step 5: Conditionally generate .vscode/extensions.json
+	if data.IncludeDevContainer && len(data.VSCodeExtensions) > 0 {
+		if err := s.writeVSCodeExtensions(targetDir, data.VSCodeExtensions); err != nil {
 			return err
 		}
 	}
@@ -280,6 +294,28 @@ func (s *Scaffolder) scaffoldLicense(targetDir string, data TemplateData) error 
 
 	if err := s.templates.ExecuteTemplate(file, tmplName, data); err != nil {
 		return fmt.Errorf("failed to render LICENSE: %w", err)
+	}
+	return nil
+}
+
+// writeVSCodeExtensions generates .vscode/extensions.json with workspace
+// extension recommendations. VS Code shows an "Install recommended extensions?"
+// prompt when the workspace is opened, both locally and in devcontainers.
+func (s *Scaffolder) writeVSCodeExtensions(targetDir string, extensions []string) error {
+	vscodDir := filepath.Join(targetDir, ".vscode")
+	if err := os.MkdirAll(vscodDir, 0755); err != nil {
+		return fmt.Errorf("failed to create .vscode directory: %w", err)
+	}
+
+	content := VSCodeWorkspaceExtensions{Recommendations: extensions}
+	jsonBytes, err := json.MarshalIndent(content, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to generate .vscode/extensions.json: %w", err)
+	}
+
+	outputPath := filepath.Join(vscodDir, "extensions.json")
+	if err := os.WriteFile(outputPath, append(jsonBytes, '\n'), 0644); err != nil {
+		return fmt.Errorf("failed to write .vscode/extensions.json: %w", err)
 	}
 	return nil
 }
