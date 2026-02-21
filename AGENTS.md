@@ -21,7 +21,7 @@ Go CLI tool for rapid agentic POC scaffolding. Run `seed <directory>` to create 
 - **Check coherence before committing**: Skim project docs and verify they still agree with each other and with the code. Fix drift immediately — it compounds fast
 - **Capture learnings**: When you discover something non-obvious — a gotcha, a pattern that works, a workaround — add it to LEARNINGS.md. If it's not worth writing down, it wasn't a real learning
 - **Prune ruthlessly**: Replace placeholders with real content as soon as you can, or delete them. Stale scaffolding is worse than no scaffolding
-- **Entropy guard**: Before marking work as done, run the `entropy-guard` skill (`skills/entropy-guard.md`) to check for uncaptured decisions, learnings, doc drift, and stale placeholders. 2-5 minutes. Skip for trivial changes
+- **Entropy guard**: Before committing non-trivial work, run `skills/entropy-guard.md` in full — don't shortcut it. It ensures the project's docs remain coherent and self-referential with what was just built
 
 ## Project Constraints
 
