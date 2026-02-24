@@ -9,15 +9,13 @@ curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh
 seed myproject
 ```
 
-You get:
+## What you get
 
 - **Agent-ready docs** — AGENTS.md, TODO.md, DECISIONS.md, LEARNINGS.md pre-wired for AI-assisted development
 - **Optional dev container** — language-specific base image with `gh` CLI (via devcontainer feature), authenticated via host token
 - **AI chat continuity** — setup script persists conversation context across container rebuilds
 - **Agent skills** — reusable markdown procedures (`doc-health-check`, `entropy-guard`, ...) installed into `skills/`
 - **No bloat** — just enough structure to grow into
-
-## What you get
 
 ```
 myproject/
