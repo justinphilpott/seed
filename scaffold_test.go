@@ -704,6 +704,60 @@ func TestVSCodeExtensionsJSON(t *testing.T) {
 	})
 }
 
+func TestInstallSkillsCreatesFiles(t *testing.T) {
+	dir := t.TempDir()
+	if err := InstallSkills(dir); err != nil {
+		t.Fatalf("InstallSkills: %v", err)
+	}
+	for _, name := range []string{
+		"doc-health-check.md",
+		"entropy-guard.md",
+		"seed-feedback.md",
+		"seed-ux-eval.md",
+	} {
+		path := filepath.Join(dir, "skills", name)
+		if _, err := os.Stat(path); err != nil {
+			t.Errorf("expected skills/%s to exist: %v", name, err)
+		}
+	}
+}
+
+func TestInstallSkillsDoesNotOverwrite(t *testing.T) {
+	dir := t.TempDir()
+	skillsDir := filepath.Join(dir, "skills")
+	os.MkdirAll(skillsDir, 0755)
+
+	// Pre-write a custom version of one skill
+	customContent := []byte("my custom skill content")
+	os.WriteFile(filepath.Join(skillsDir, "doc-health-check.md"), customContent, 0644)
+
+	if err := InstallSkills(dir); err != nil {
+		t.Fatalf("InstallSkills: %v", err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(skillsDir, "doc-health-check.md"))
+	if err != nil {
+		t.Fatalf("skill file should still exist: %v", err)
+	}
+	if string(content) != string(customContent) {
+		t.Error("existing skill file should not be overwritten")
+	}
+}
+
+func TestInstallSkillsDevSkillsNotInstalled(t *testing.T) {
+	dir := t.TempDir()
+	if err := InstallSkills(dir); err != nil {
+		t.Fatalf("InstallSkills: %v", err)
+	}
+	// Dev skills in skills/dev/ must not be copied to seeded projects
+	for _, name := range []string{"test-scaffold.md", "triage-feedback.md"} {
+		path := filepath.Join(dir, "skills", name)
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			t.Errorf("dev skill %s should not be installed into seeded projects", name)
+		}
+	}
+}
+
 func TestEmptyDirectoryReuseSucceeds(t *testing.T) {
 	dir := t.TempDir()
 	target := filepath.Join(dir, "project")

@@ -63,11 +63,6 @@ func main() {
 // Returns:
 // - error: If any step fails
 func run() error {
-	// Handle subcommands before normal arg parsing
-	if len(os.Args) >= 2 && os.Args[1] == "skills" {
-		return runSkills()
-	}
-
 	// Step 1: Parse command-line arguments
 	targetDir, err := parseArgs()
 	if err != nil {
@@ -103,14 +98,19 @@ func run() error {
 		return fmt.Errorf("failed to scaffold project: %w", err)
 	}
 
-	// Step 6: Optionally initialize git repository
+	// Step 6: Install agent skills into the project
+	if err := InstallSkills(targetDir); err != nil {
+		return fmt.Errorf("failed to install skills: %w", err)
+	}
+
+	// Step 7: Optionally initialize git repository
 	if wizardData.InitGit {
 		if err := initGitRepo(targetDir, wizardData.ProjectName); err != nil {
 			return fmt.Errorf("failed to initialize git: %w", err)
 		}
 	}
 
-	// Step 7: Success! Print confirmation
+	// Step 8: Success! Print confirmation
 	fmt.Println()
 	fmt.Printf("%s Project %s created in %s\n",
 		successStyle.Render("✓"),
@@ -130,6 +130,7 @@ func run() error {
 	}
 	fmt.Printf("  %s\n", dimStyle.Render("# State your goal in README.md — what are you trying to prove?"))
 	fmt.Printf("  %s\n", dimStyle.Render("# Review AGENTS.md — edit working practices to fit your team"))
+	fmt.Printf("  %s\n", dimStyle.Render("# Check skills/ — reusable agent procedures (doc-health-check, entropy-guard, ...)"))
 	fmt.Printf("  %s\n", dimStyle.Render("# Start building!"))
 
 	return nil
@@ -214,46 +215,6 @@ func initGitRepo(targetDir, projectName string) error {
 	return nil
 }
 
-// runSkills handles the `seed skills <directory>` subcommand.
-// Installs embedded skill files into the target project's skills/ directory.
-func runSkills() error {
-	args := os.Args[2:] // Skip "seed" and "skills"
-
-	if len(args) == 0 {
-		return fmt.Errorf("missing target directory\n\nUsage: seed skills <directory>")
-	}
-	if args[0] == "--help" || args[0] == "-h" {
-		fmt.Println("Install agent skill files into an existing project.")
-		fmt.Println()
-		fmt.Println("Usage: seed skills <directory>")
-		fmt.Println()
-		fmt.Println("Copies skill files (e.g., doc-health-check.md) into <directory>/skills/.")
-		fmt.Println("Skills are agent instructions — markdown files that define reusable procedures.")
-		os.Exit(0)
-	}
-	if len(args) > 1 {
-		return fmt.Errorf("too many arguments\n\nUsage: seed skills <directory>")
-	}
-
-	targetDir := args[0]
-	if err := InstallSkills(targetDir); err != nil {
-		return err
-	}
-
-	fmt.Println()
-	fmt.Printf("%s Skills installed to: %s\n",
-		successStyle.Render("✓"),
-		filepath.Join(targetDir, "skills"))
-	fmt.Println()
-	fmt.Println(dimStyle.Render("Installed skills:"))
-	fmt.Println(dimStyle.Render("  doc-health-check.md  — Audit project docs for informational coverage"))
-	fmt.Println(dimStyle.Render("  seed-feedback.md     — Submit scaffolding suggestions back to seed"))
-	fmt.Println()
-	fmt.Println(dimStyle.Render("Point your agent at skills/ to use them."))
-
-	return nil
-}
-
 // parseArgs parses command-line arguments and returns the target directory.
 //
 // Expected usage:
@@ -304,15 +265,15 @@ func showUsage() {
 	fmt.Printf(`🌱 seed v%s — rapid agentic project scaffolder
 
 USAGE:
-  seed <directory>              Scaffold a new project
-  seed skills <directory>       Add agent skill files to a project
+  seed <directory>
 
 WHAT IT DOES:
   Runs an interactive wizard that asks about your project, then generates
-  a set of structured markdown docs designed for AI agents to work with.
+  a set of structured markdown docs and agent skill files designed for AI
+  agents to work with from day one.
 
   The wizard collects: project name, description, language/framework,
-  architecture style, and optional devcontainer setup.
+  and optional devcontainer setup.
 
 GENERATED FILES:
   README.md                        Project overview
@@ -325,18 +286,12 @@ GENERATED FILES:
   LICENSE                          Open-source license (optional)
   .devcontainer/devcontainer.json  Dev container config (optional)
   .devcontainer/setup.sh           AI chat continuity (optional)
-
-AGENT SKILLS:
-  seed skills <directory>
-  Copies reusable agent skill files (markdown procedures that AI agents
-  can follow) into <directory>/skills/. Use this to add skills to an
-  existing project without re-running the full wizard.
+  skills/                          Reusable agent skill files
 
 EXAMPLES:
   seed myproject                Create ./myproject/
   seed ~/dev/myapp              Create ~/dev/myapp/
   seed .                        Use current directory (if empty)
-  seed skills ./myproject       Add skills to an existing project
 
 FLAGS:
   -h, --help      Show this help message

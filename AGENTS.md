@@ -2,15 +2,23 @@
 
 Go CLI tool for rapid agentic POC scaffolding. Run `seed <directory>` to create a new project with minimal, agent-friendly documentation files.
 
-> For Claude Code-specific instructions, see [CLAUDE.md](CLAUDE.md).
-
 ## Quick Links
 
-- [CLAUDE.md](CLAUDE.md) - Claude Code instructions and quick reference
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Development setup, architecture, template variables, extending seed
 - [DECISIONS.md](DECISIONS.md) - Architectural decisions and rationale
 - [TODO.md](TODO.md) - Active work and next steps
 - [LEARNINGS.md](LEARNINGS.md) - Validated discoveries across both layers (see below)
+
+## Quick Reference
+
+```bash
+go mod tidy          # Install/update dependencies
+go run .             # Run without building
+make build           # Build binary with version injection
+make test            # Run tests
+go fmt ./...         # Format code
+go vet ./...         # Static analysis
+```
 
 ## Working Practices
 
@@ -40,19 +48,9 @@ Go CLI tool for rapid agentic POC scaffolding. Run `seed <directory>` to create 
 - **wizard_test.go** - Wizard validation and data transformation tests
 - **skills.go** - Skill file embedding and installation logic
 - **templates/*.tmpl** - Embedded project templates (README, AGENTS, DECISIONS, TODO, LEARNINGS, Dockerfile)
-- **skills/*.md** - Agent skills embedded in the binary and installed into seeded projects (doc-health-check, seed-feedback, seed-ux-eval, entropy-guard)
-- **.claude/commands/*.md** - Slash commands for seed's own development workflow (test-scaffold, triage-feedback); not installed into target projects
-
-## Commands
-
-```bash
-go mod tidy          # Install/update dependencies
-go run .             # Run without building
-make build           # Build binary with version injection
-make test            # Run tests
-go fmt ./...         # Format code
-go vet ./...         # Static analysis
-```
+- **skills/*.md** - Skills installed into every seeded project (doc-health-check, entropy-guard, seed-feedback, seed-ux-eval)
+- **skills/dev/*.md** - Seed development workflow skills; not embedded, not installed into seeded projects
+- **.claude/commands/*.md** - Symlinks into skills/dev/ so Claude Code can expose them as slash commands
 
 ## Testing
 
@@ -65,10 +63,29 @@ go vet ./...         # Static analysis
 Seed scaffolds agentic docs for other projects (`templates/*.tmpl`) and also maintains its own agentic docs for development. These are two layers of the same philosophy — insights from improving one should inform the other.
 
 - **Seed's templates** — starter docs for new projects (AGENTS.md, README.md, DECISIONS.md, TODO.md, LEARNINGS.md)
-- **Seed's own docs** — mature docs for this project (CLAUDE.md, AGENTS.md, CONTRIBUTING.md, LEARNINGS.md)
+- **Seed's own docs** — mature docs for this project (AGENTS.md, CONTRIBUTING.md, LEARNINGS.md)
 
 When recording learnings, note which layer they apply to — or both. See [LEARNINGS.md](LEARNINGS.md).
 
 ## Branch
 
 Main branch: `main`. Feature branches are cut from `main` and merged via PR.
+
+## Releasing
+
+Push a git tag to trigger automatic cross-platform builds via GitHub Actions:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Builds for Linux/macOS (amd64/arm64) and Windows (amd64) are published as GitHub Releases.
+
+## Maintaining These Docs
+
+When adding/removing source files, templates, or changing architecture, update:
+- The **Key Files** section in this file
+- The **Architecture** section in CONTRIBUTING.md
+
+When making architectural decisions, add an entry to DECISIONS.md.
