@@ -15,7 +15,7 @@ export GH_TOKEN=$(gh auth token)
 Then in VS Code:
 - **Command Palette** (`Ctrl+Shift+P`)
 - Type: **Dev Containers: Reopen in Container**
-- Wait for container to build (has Go and gh CLI pre-installed)
+- Wait for container to build (Go base image, gh CLI added via devcontainer feature)
 
 ### 2. Install Dependencies
 
@@ -98,20 +98,18 @@ The scaffold logic automatically strips `.tmpl` and renders with `TemplateData`.
 
 ### Add a New Skill
 
-There are two categories of skill/command file — they live in different directories and serve different audiences:
+There are two categories of skill file — they live in different subdirectories and serve different audiences:
 
-**Skills installed into target projects** (`skills/`):
+**Skills installed into seeded projects** (`skills/*.md`):
 - Embedded in the binary at compile time via `//go:embed skills/*.md`
-- Copied to `targetDir/skills/` when seed scaffolds a new project
-- Intended for agents working inside a seeded project (e.g., `seed-feedback`, `doc-health-check`, `seed-ux-eval`)
+- Automatically copied to `targetDir/skills/` when seed scaffolds a new project
+- Intended for agents working inside a seeded project (e.g., `seed-feedback`, `doc-health-check`, `entropy-guard`)
 - To add: create `skills/your-skill.md` — it's automatically embedded and installed
 
-**Seed development slash commands** (`.claude/commands/`):
-- Claude Code slash commands for use while developing seed itself
-- Not embedded or installed anywhere — live only in this repo
-- Intended for the seed maintainer's workflow (e.g., `/test-scaffold`, `/triage-feedback`)
-- To add: create `.claude/commands/your-command.md`
-- Note: `.claude/settings.local.json` is gitignored (machine-local); commands are committed and travel with the repo
+**Seed development workflow skills** (`skills/dev/*.md`):
+- Skills for use while developing seed itself; not embedded, not installed into seeded projects
+- Exposed as Claude Code slash commands via symlinks in `.claude/commands/` (e.g., `/test-scaffold`, `/triage-feedback`)
+- To add: create `skills/dev/your-skill.md`, then `ln -s ../../skills/dev/your-skill.md .claude/commands/your-skill.md`
 
 ## Feedback Loop
 
@@ -125,7 +123,7 @@ Seed has a structured feedback loop for gathering UX signal from freshly seeded 
 
 **Your place in the loop**: between stage 3 and any code change. Triage is the gate. Changes that would affect seeded projects should only land after considering open feedback on that surface.
 
-**Validation**: Before merging significant changes, run `/test-scaffold` to verify the test suite, build, and scaffold output across representative option combinations.
+**Validation**: Before merging significant changes, run `/test-scaffold` (a Claude Code slash command backed by `skills/dev/test-scaffold.md`) to verify the test suite, build, and scaffold output across representative option combinations.
 
 ## Testing
 
@@ -186,6 +184,5 @@ Brief reference for contributors less familiar with Go:
 ## Maintaining These Docs
 
 When adding/removing source files, templates, or changing architecture, update:
-- The **Architecture** section in CLAUDE.md
 - The **Key Files** section in AGENTS.md
 - The **Architecture** section in this file
