@@ -6,6 +6,7 @@ A tiny CLI scaffolding tool that "seeds" a directory with a useful set of docume
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
 seed myproject
 ```
 

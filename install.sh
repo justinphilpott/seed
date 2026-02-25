@@ -99,8 +99,16 @@ case ":$PATH:" in
         echo "Ready to go! Run 'seed' to get started."
         ;;
     *)
+        CURRENT_SHELL="$(basename "${SHELL:-/bin/sh}")"
         PATH_LINE="export PATH=\"${INSTALL_DIR}:\$PATH\""
         UPDATED=""
+        PREFERRED_RC=""
+
+        case "$CURRENT_SHELL" in
+            zsh)  PREFERRED_RC="$HOME/.zshrc" ;;
+            bash) PREFERRED_RC="$HOME/.bashrc" ;;
+            *)    PREFERRED_RC="$HOME/.profile" ;;
+        esac
 
         # Update all existing shell rc files (like rustup does)
         for rc in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.profile"; do
@@ -122,7 +130,13 @@ case ":$PATH:" in
             echo "Created ${UPDATED}"
         fi
 
-        echo "Restart your shell or run: source ${UPDATED}"
+        echo "For this shell session, run: export PATH=\"${INSTALL_DIR}:\$PATH\""
+        if [ -f "$PREFERRED_RC" ]; then
+            echo "Or reload your shell config: source ${PREFERRED_RC}"
+        else
+            echo "Or reload your shell config: source ${UPDATED}"
+        fi
+        echo "You can always run directly: ${INSTALL_DIR}/${BINARY_NAME}"
         ;;
 esac
 

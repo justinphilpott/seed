@@ -132,6 +132,7 @@ Seed has a structured feedback loop for gathering UX signal from freshly seeded 
 - Each test uses `tempDir(t)` helper for isolated temp directories (auto-cleaned)
 - `scaffold_test.go` — file existence, template content, devcontainer JSON validity, error handling, edge cases
 - `wizard_test.go` — input validation boundaries, `WizardData` to `TemplateData` conversion
+- `scripts/test-install.sh` — installer integration check (PATH guidance + binary install flow with mocked network)
 
 ### Manual Testing
 
