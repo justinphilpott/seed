@@ -5,9 +5,7 @@ A tiny CLI scaffolding tool that "seeds" a directory with a useful set of docume
 ## Quick start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH"
-seed myproject
+curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | sh && export PATH="$HOME/.local/bin:$PATH" && seed myproject
 ```
 
 ## What you get
@@ -44,7 +42,7 @@ Every file is a starting point, not a finished document. Fill them in as you bui
 ### Quick install (Linux/macOS)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/justinphilpott/seed/main/install.sh | sh && export PATH="$HOME/.local/bin:$PATH"
 ```
 
 Install to a custom directory:
