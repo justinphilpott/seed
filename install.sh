@@ -127,7 +127,7 @@ case ":$PATH:" in
                 *)    UPDATED="$HOME/.profile" ;;
             esac
             printf '\n# Added by seed installer\n%s\n' "$PATH_LINE" >> "$UPDATED"
-            echo "Created ${UPDATED}"
+            echo "Created ${UPDATED} (to add ${INSTALL_DIR} to PATH)"
         fi
 
         echo "For this shell session, run: export PATH=\"${INSTALL_DIR}:\$PATH\""

@@ -33,12 +33,12 @@ import (
 type WizardData struct {
 	ProjectName         string
 	Description         string
-	License             string // "none", "MIT", or "Apache-2.0"
-	InitGit             bool   // Whether to run git init + initial commit
-	IncludeDevContainer bool   // Whether to scaffold .devcontainer/
-	DevContainerImage      string   // MCR image tag, e.g. "go:2-1.25-trixie"
-	AIChatContinuity       bool     // Whether to enable AI chat continuity
-	AgentExtensions        []string // Selected extension IDs (e.g. "anthropics.claude-code")
+	License             string   // "none", "MIT", or "Apache-2.0"
+	InitGit             bool     // Whether to run git init + initial commit
+	IncludeDevContainer bool     // Whether to scaffold .devcontainer/
+	DevContainerImage   string   // MCR image tag, e.g. "go:2-1.25-trixie"
+	AIChatContinuity    bool     // Whether to enable AI chat continuity
+	AgentExtensions     []string // Selected extension IDs (e.g. "anthropics.claude-code")
 }
 
 // RunWizard launches the interactive TUI wizard and collects user input.
@@ -64,16 +64,12 @@ func RunWizard(defaultName string) (WizardData, error) {
 		// Group 1: Core project info
 		huh.NewGroup(
 			huh.NewInput().
-				Title("Project Name").
-				Description("Name of your new project").
-				Placeholder("my-awesome-project").
+				Title("Project name").
 				Value(&data.ProjectName).
 				Validate(validateProjectName),
 
 			huh.NewText().
 				Title("Description").
-				Description("Brief description (1-2 sentences)").
-				Placeholder("A POC to explore [technology/idea]...").
 				CharLimit(500).
 				Value(&data.Description).
 				Validate(validateDescription),
@@ -81,24 +77,12 @@ func RunWizard(defaultName string) (WizardData, error) {
 
 		// Group 2: Project setup options
 		huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("License").
-				Description("Open-source license for your project").
-				Options(
-					huh.NewOption("None", "none"),
-					huh.NewOption("MIT", "MIT"),
-					huh.NewOption("Apache-2.0", "Apache-2.0"),
-				).
-				Value(&data.License),
-
 			huh.NewConfirm().
 				Title("Initialize git repository?").
-				Description("Runs git init and creates an initial commit").
 				Value(&data.InitGit),
 
 			huh.NewConfirm().
 				Title("Include a dev container?").
-				Description("Adds .devcontainer/ for containerized development").
 				Value(&data.IncludeDevContainer),
 		),
 
@@ -107,8 +91,7 @@ func RunWizard(defaultName string) (WizardData, error) {
 			// Image tags reference MCR defaults at time of release.
 			// Check https://mcr.microsoft.com for current versions.
 			huh.NewSelect[string]().
-				Title("Which tech stack?").
-				Description("Base image from Microsoft Container Registry").
+				Title("Tech stack").
 				Options(
 					huh.NewOption("Go", "go:2-1.25-trixie"),
 					huh.NewOption("Node/TypeScript", "typescript-node:20-bookworm"),
@@ -123,12 +106,10 @@ func RunWizard(defaultName string) (WizardData, error) {
 
 			huh.NewConfirm().
 				Title("Enable AI chat continuity?").
-				Description("Auto-detects Claude Code, Codex, etc. and preserves conversations in container").
 				Value(&data.AIChatContinuity),
 
 			huh.NewMultiSelect[string]().
-				Title("Coding agent extensions").
-				Description("Auto-installs selected VS Code extensions in the dev container").
+				Title("Agent extensions").
 				Options(
 					huh.NewOption("Claude Code", "anthropics.claude-code"),
 					huh.NewOption("Codex", "openai.chatgpt"),
@@ -137,6 +118,18 @@ func RunWizard(defaultName string) (WizardData, error) {
 		).WithHideFunc(func() bool {
 			return !data.IncludeDevContainer
 		}),
+
+		// Group 4: License selection (kept last intentionally)
+		huh.NewGroup(
+			huh.NewSelect[string]().
+				Title("License").
+				Options(
+					huh.NewOption("None", "none"),
+					huh.NewOption("MIT", "MIT"),
+					huh.NewOption("Apache-2.0", "Apache-2.0"),
+				).
+				Value(&data.License),
+		),
 	)
 
 	// Run the form and wait for user to complete or cancel
