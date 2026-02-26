@@ -758,6 +758,30 @@ func TestInstallSkillsDevSkillsNotInstalled(t *testing.T) {
 	}
 }
 
+func TestInstallSkillsWithReportTracksSkippedFiles(t *testing.T) {
+	dir := t.TempDir()
+	skillsDir := filepath.Join(dir, "skills")
+	if err := os.MkdirAll(skillsDir, 0755); err != nil {
+		t.Fatalf("MkdirAll: %v", err)
+	}
+
+	if err := os.WriteFile(filepath.Join(skillsDir, "doc-health-check.md"), []byte("custom"), 0644); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+
+	report, err := installSkillsWithReport(dir)
+	if err != nil {
+		t.Fatalf("installSkillsWithReport: %v", err)
+	}
+
+	if len(report.Skipped) != 1 {
+		t.Fatalf("expected 1 skipped skill, got %d", len(report.Skipped))
+	}
+	if report.Skipped[0] != "doc-health-check.md" {
+		t.Fatalf("expected skipped skill doc-health-check.md, got %q", report.Skipped[0])
+	}
+}
+
 func TestEmptyDirectoryReuseSucceeds(t *testing.T) {
 	dir := t.TempDir()
 	target := filepath.Join(dir, "project")

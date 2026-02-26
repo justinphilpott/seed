@@ -5,7 +5,7 @@
 // It's responsible for:
 // - Parsing command-line arguments
 // - Displaying usage/help information
-// - Orchestrating the wizard → scaffolder flow
+// - Orchestrating the wizard -> scaffolder flow
 // - Handling errors and providing user-friendly messages
 //
 // DESIGN PATTERNS:
@@ -15,16 +15,20 @@
 //
 // USAGE:
 // seed <directory>
-// seed myproject     → Creates ./myproject/
-// seed ~/dev/myapp   → Creates ~/dev/myapp/
+// seed myproject     -> Creates ./myproject/
+// seed ~/dev/myapp   -> Creates ~/dev/myapp/
 
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -32,32 +36,65 @@ import (
 
 // Minimal styles for output messages
 var (
-	successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("2"))  // green
-	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))             // gray
-	errorStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("1"))  // red
-	labelStyle   = lipgloss.NewStyle().Bold(true)                                  // bold white — section headers
-	cmdStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("15"))            // bright white — commands
+	successStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("2")) // green
+	dimStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))            // gray
 )
 
 // Version is set at build time via ldflags. Falls back to "dev" for local builds.
 var Version = "dev"
 
+type usageError struct {
+	msg string
+}
+
+func (e usageError) Error() string {
+	return e.msg
+}
+
 func main() {
 	// Run main logic and exit with appropriate code
 	if err := run(); err != nil {
-		fmt.Fprintf(os.Stderr, "%s %v\n", errorStyle.Render("Error:"), err)
+		fmt.Fprintln(os.Stderr, formatErrorOutput(displayVersion(), err))
 		os.Exit(1)
 	}
+}
+
+func displayVersion() string {
+	return strings.TrimPrefix(Version, "v")
+}
+
+func renderStartBanner(version string) string {
+	return fmt.Sprintf("🌱 Seed %s - Simple project scaffolding. Setup wizard:", version)
+}
+
+func renderErrorBanner(version, message string) string {
+	return fmt.Sprintf("🌱 Seed %s - Error: %s", version, message)
+}
+
+func renderScaffoldingLine() string {
+	return "scaffolding..."
+}
+
+func formatErrorOutput(version string, err error) string {
+	var b strings.Builder
+	b.WriteString(renderErrorBanner(version, err.Error()))
+
+	var usageErr usageError
+	if errors.As(err, &usageErr) {
+		b.WriteString("\n\nUsage: seed <directory>")
+	}
+
+	return b.String()
 }
 
 // run contains the main program logic.
 // Separated from main() to enable clean error handling and testing.
 //
 // Flow:
-// 1. Parse CLI arguments → get target directory
-// 2. Run TUI wizard → collect user input
-// 3. Initialize scaffolder → prepare template engine
-// 4. Scaffold project → render templates and write files
+// 1. Parse CLI arguments -> get target directory
+// 2. Run TUI wizard -> collect user input
+// 3. Initialize scaffolder -> prepare template engine
+// 4. Scaffold project -> render templates and write files
 // 5. Print success message
 //
 // Returns:
@@ -69,71 +106,157 @@ func run() error {
 		return err
 	}
 
-	// Step 2: Check target directory and confirm if non-empty
+	// Step 2: Show startup context
+	fmt.Println(renderStartBanner(displayVersion()))
+	fmt.Println()
+
+	targetDirExisted, err := targetDirectoryExists(targetDir)
+	if err != nil {
+		return err
+	}
+
+	// Step 3: Check target directory and confirm if non-empty
 	allowNonEmpty, err := checkTargetDir(targetDir)
 	if err != nil {
 		return err
 	}
 
-	// Step 3: Run interactive wizard
-	fmt.Printf("🌱 Seed v%s - Project Scaffolder\n", Version)
-	fmt.Println()
+	// Capture existing files before scaffolding so we can report created files by phase.
+	beforeFiles, err := snapshotProjectFiles(targetDir)
+	if err != nil {
+		return fmt.Errorf("failed to inspect existing files: %w", err)
+	}
 
+	// Step 4: Run interactive wizard
 	wizardData, err := RunWizard(filepath.Base(targetDir))
 	if err != nil {
 		// User cancelled (Ctrl+C) or validation error
 		return fmt.Errorf("wizard cancelled: %w", err)
 	}
 
-	// Step 4: Initialize scaffolder with embedded templates
+	// Step 5: Initialize scaffolder with embedded templates
 	scaffolder, err := NewScaffolder()
 	if err != nil {
 		// This should never happen if templates are valid
 		return fmt.Errorf("failed to initialize scaffolder: %w", err)
 	}
 
-	// Step 5: Convert wizard data to template data and scaffold
+	fmt.Println(renderScaffoldingLine())
+	fmt.Println()
+
+	if !targetDirExisted {
+		fmt.Printf("Created directory: %s\n", targetDir)
+	}
+
+	// Step 6: Convert wizard data to template data and scaffold
 	templateData := wizardData.ToTemplateData()
 	if err := scaffolder.Scaffold(targetDir, templateData, allowNonEmpty); err != nil {
 		return fmt.Errorf("failed to scaffold project: %w", err)
 	}
 
-	// Step 6: Install agent skills into the project
-	if err := InstallSkills(targetDir); err != nil {
+	afterScaffoldFiles, err := snapshotProjectFiles(targetDir)
+	if err != nil {
+		return fmt.Errorf("failed to inspect scaffolded files: %w", err)
+	}
+	scaffoldCreatedFiles := createdFileList(beforeFiles, afterScaffoldFiles)
+	for _, file := range scaffoldCreatedFiles {
+		fmt.Printf("%s created %s\n", successStyle.Render("✓"), file)
+	}
+
+	// Step 7: Install agent skills into the project
+	_, err = installSkillsWithReport(targetDir)
+	if err != nil {
 		return fmt.Errorf("failed to install skills: %w", err)
 	}
 
-	// Step 7: Optionally initialize git repository
+	afterSkillsFiles, err := snapshotProjectFiles(targetDir)
+	if err != nil {
+		return fmt.Errorf("failed to inspect created files: %w", err)
+	}
+	skillsCreatedFiles := createdFileList(afterScaffoldFiles, afterSkillsFiles)
+	for _, file := range skillsCreatedFiles {
+		fmt.Printf("%s created %s\n", successStyle.Render("✓"), file)
+	}
+
+	gitActions := []string{}
+	// Step 8: Optionally initialize git repository
 	if wizardData.InitGit {
-		if err := initGitRepo(targetDir, wizardData.ProjectName); err != nil {
+		gitActions, err = initGitRepo(targetDir, wizardData.ProjectName)
+		if err != nil {
 			return fmt.Errorf("failed to initialize git: %w", err)
+		}
+		for _, action := range gitActions {
+			fmt.Printf("%s %s\n", successStyle.Render("✓"), action)
 		}
 	}
 
-	// Step 8: Success! Print confirmation
-	fmt.Println()
-	fmt.Printf("%s Project %s created in %s\n",
-		successStyle.Render("✓"),
-		successStyle.Render(wizardData.ProjectName),
-		successStyle.Render(targetDir))
-	fmt.Println()
-	fmt.Println(labelStyle.Render("Next steps:"))
-	fmt.Println()
-	fmt.Printf("  %s\n", cmdStyle.Render("cd "+targetDir))
-	fmt.Println()
-	if templateData.IncludeDevContainer {
-		fmt.Printf("  %s\n", cmdStyle.Render("export GH_TOKEN=$(gh auth token)"))
-		fmt.Printf("  %s\n", dimStyle.Render("# Gives gh CLI access inside the container"))
-		fmt.Println()
-		fmt.Printf("  %s\n", dimStyle.Render("# Open in VS Code → Reopen in Container"))
-		fmt.Println()
-	}
-	fmt.Printf("  %s\n", dimStyle.Render("# State your goal in README.md — what are you trying to prove?"))
-	fmt.Printf("  %s\n", dimStyle.Render("# Review AGENTS.md — edit working practices to fit your team"))
-	fmt.Printf("  %s\n", dimStyle.Render("# Check skills/ — reusable agent procedures (doc-health-check, entropy-guard, ...)"))
-	fmt.Printf("  %s\n", dimStyle.Render("# Start building!"))
+	fmt.Println("Done.")
 
 	return nil
+}
+
+func targetDirectoryExists(targetDir string) (bool, error) {
+	info, err := os.Stat(targetDir)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("cannot access %s: %w", targetDir, err)
+	}
+	if !info.IsDir() {
+		return false, fmt.Errorf("%s exists but is not a directory", targetDir)
+	}
+	return true, nil
+}
+
+// snapshotProjectFiles returns all file paths under root as slash-normalized
+// paths relative to root. Missing roots return an empty set.
+func snapshotProjectFiles(root string) (map[string]struct{}, error) {
+	files := make(map[string]struct{})
+
+	info, err := os.Stat(root)
+	if os.IsNotExist(err) {
+		return files, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	if !info.IsDir() {
+		return nil, fmt.Errorf("%s is not a directory", root)
+	}
+
+	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		files[filepath.ToSlash(rel)] = struct{}{}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+// createdFileList returns sorted file paths present in after but not before.
+func createdFileList(before, after map[string]struct{}) []string {
+	var created []string
+	for file := range after {
+		if _, exists := before[file]; !exists {
+			created = append(created, file)
+		}
+	}
+	sort.Strings(created)
+	return created
 }
 
 // checkTargetDir validates the target directory before launching the wizard.
@@ -142,7 +265,7 @@ func run() error {
 func checkTargetDir(targetDir string) (bool, error) {
 	info, err := os.Stat(targetDir)
 	if os.IsNotExist(err) {
-		// Target doesn't exist yet — validate that the parent is reachable and writable
+		// Target doesn't exist yet -> validate that the parent is reachable and writable
 		parentDir := filepath.Dir(targetDir)
 		parentInfo, err := os.Stat(parentDir)
 		if os.IsNotExist(err) {
@@ -177,7 +300,7 @@ func checkTargetDir(targetDir string) (bool, error) {
 		return false, nil // empty dir, all good
 	}
 
-	// Non-empty — ask user to confirm
+	// Non-empty -> ask user to confirm
 	var confirm bool
 	err = huh.NewConfirm().
 		Title(fmt.Sprintf("Directory %s contains %d items. Continue anyway?", targetDir, len(entries))).
@@ -188,31 +311,34 @@ func checkTargetDir(targetDir string) (bool, error) {
 		return false, fmt.Errorf("cancelled: %w", err)
 	}
 	if !confirm {
-		return false, fmt.Errorf("aborted — directory is not empty")
+		return false, fmt.Errorf("aborted -> directory is not empty")
 	}
 	return true, nil
 }
 
 // initGitRepo runs git init, git add, and an initial commit in the target directory.
-func initGitRepo(targetDir, projectName string) error {
+func initGitRepo(targetDir, projectName string) ([]string, error) {
 	commands := []struct {
-		args []string
+		args  []string
+		label string
 	}{
-		{[]string{"git", "init"}},
-		{[]string{"git", "add", "."}},
-		{[]string{"git", "commit", "-m", fmt.Sprintf("Initial scaffold for %s (via seed)", projectName)}},
+		{args: []string{"git", "init"}, label: "git init"},
+		{args: []string{"git", "add", "."}, label: "git add ."},
+		{args: []string{"git", "commit", "-m", fmt.Sprintf("Initial scaffold for %s (via seed)", projectName)}, label: "git commit -m \"Initial scaffold for <project> (via seed)\""},
 	}
 
+	executed := make([]string, 0, len(commands))
 	for _, c := range commands {
 		cmd := exec.Command(c.args[0], c.args[1:]...)
 		cmd.Dir = targetDir
 		cmd.Stdout = nil // suppress output
 		cmd.Stderr = nil
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("%s failed: %w", c.args[0], err)
+			return executed, fmt.Errorf("%s failed: %w", c.label, err)
 		}
+		executed = append(executed, c.label)
 	}
-	return nil
+	return executed, nil
 }
 
 // parseArgs parses command-line arguments and returns the target directory.
@@ -225,10 +351,11 @@ func initGitRepo(targetDir, projectName string) error {
 // - error: If arguments are invalid
 //
 // Handles:
-// - No arguments → show usage
-// - Too many arguments → show usage
-// - --help, -h, help → show usage
-// - --version, -v → show version
+// - No arguments -> show usage
+// - Too many arguments -> usageError
+// - --help, -h, help -> show usage
+// - --version, -v -> show version
+// - --verbose -> accepted for backward compatibility; ignored
 func parseArgs() (string, error) {
 	args := os.Args[1:] // Skip program name
 
@@ -250,9 +377,17 @@ func parseArgs() (string, error) {
 		os.Exit(0)
 	}
 
+	if args[0] == "--verbose" {
+		args = args[1:]
+	}
+
+	if len(args) == 0 {
+		return "", usageError{msg: "missing directory argument"}
+	}
+
 	// Handle too many arguments
 	if len(args) > 1 {
-		return "", fmt.Errorf("too many arguments\n\nUsage: seed <directory>")
+		return "", usageError{msg: "too many arguments"}
 	}
 
 	// Return the target directory

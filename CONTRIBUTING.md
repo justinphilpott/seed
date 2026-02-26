@@ -51,6 +51,8 @@ Seed follows strict separation of concerns across four files:
 - **scaffold.go** — Template rendering (embed.FS + text/template), devcontainer generation (encoding/json). Knows nothing about TUI.
 - **skills.go** — Skill file embedding and installation. Same embed pattern as scaffold.go.
 
+Key CLI behavior coverage lives in **main_test.go** (argument parsing and output formatting expectations).
+
 ### Key Design Decisions
 
 Full rationale for each decision lives in [DECISIONS.md](DECISIONS.md). Quick orientation for contributors:

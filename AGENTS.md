@@ -42,6 +42,7 @@ go vet ./...         # Static analysis
 ## Key Files
 
 - **main.go** - CLI entry point, argument parsing, orchestration
+- **main_test.go** - CLI argument parsing and output formatting tests
 - **wizard.go** - TUI wizard (Charm Huh), user input collection
 - **scaffold.go** - Template rendering (embed.FS + text/template), devcontainer generation, .vscode/extensions.json generation
 - **scaffold_test.go** - Scaffold/template tests
