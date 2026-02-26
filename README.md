@@ -1,4 +1,4 @@
-# Seed
+# 🌱 Seed
 
 A tiny CLI scaffolding tool that "seeds" a directory with a useful set of documentation files (human and agent-friendly) and other minimally opinionated structures to support a proof-of-concept build.
 
